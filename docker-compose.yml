@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    container_name: codeigniter-app
+    restart: always
+    environment:
+      CI_ENVIRONMENT: development
+      DATABASE_HOST: mariadb
+      DATABASE_NAME: codeigniter
+      DATABASE_USER: ciuser
+      DATABASE_PASS: cipass
+    depends_on:
+      - mariadb
+    networks:
+      - labnet
+      - internal_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer.rule=Host(`pppr.ecl.dev.br`)" ## Dominio do Portainer
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+      - "traefik.http.routers.portainer.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.portainer.service=portainer"
+      - "traefik.docker.network=labnet" ## Nome da rede interna
+      - "traefik.http.routers.portainer.entrypoints=websecure"
+      - "traefik.http.routers.portainer.priority=1"
+
+  mariadb:
+    image: mariadb:11
+    container_name: mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: codeigniter
+      MYSQL_USER: ciuser
+      MYSQL_PASSWORD: cipass
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - internal_net
+
+volumes:
+  mariadb_data:
+
+networks:
+  labnet:
+    external: true   # rede já criada para Traefik
+  internal_net:
+    external: false
