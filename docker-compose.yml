@@ -68,4 +68,6 @@ networks:
   labnet:
     external: true   # rede já criada para Traefik
     name: labnet
-  internal_net: {}
+  internal_net:
+    external: false
+    name: internal_net
