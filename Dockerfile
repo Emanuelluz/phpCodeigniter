@@ -31,6 +31,9 @@ RUN echo '<Directory /var/www/html/public>\n\
 WORKDIR /var/www/html
 COPY . .
 
+# Instala dependências
+RUN composer install --no-dev --optimize-autoloader
+
 # Configura permissões
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
