@@ -3,7 +3,7 @@ FROM php:8.3-apache
 
 # Dependências
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
-    libpng-dev libjpeg-dev libfreetype6-dev libzip-dev zip unzip git \
+    libpng-dev libjpeg-dev libfreetype6-dev libzip-dev libicu-dev zip unzip git \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd mysqli pdo pdo_mysql zip intl
 
