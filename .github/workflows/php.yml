@@ -68,21 +68,26 @@ jobs:
         docker build -t ${{ env.IMAGE_TAG }} .
         docker tag ${{ env.IMAGE_TAG }} phpcodeigniter:${{ github.sha }}
 
-    - name: Stop old containers
+    - name: Initialize Docker Swarm (if needed)
       run: |
-        echo "🛑 Stopping old containers..."
-        docker compose down || true
+        echo "� Checking Docker Swarm..."
+        docker swarm init || echo "Swarm already initialized"
 
-    - name: Deploy with Docker Compose
+    - name: Deploy to Docker Swarm
       run: |
-        echo "🚀 Deploying with Docker Compose..."
-        docker compose up -d --build
+        echo "🚀 Deploying stack to Docker Swarm..."
+        docker stack deploy -c docker-compose.yml phpcodeigniter --with-registry-auth
+
+    - name: Wait for deployment
+      run: |
+        echo "⏳ Waiting for services to start..."
+        sleep 15
 
     - name: Verify deployment
       run: |
-        echo "✅ Verifying deployment..."
-        docker compose ps
-        docker logs $(docker compose ps -q app) --tail 50 || true
+        echo "✅ Verifying stack deployment..."
+        docker stack services phpcodeigniter
+        docker service ls --filter "label=com.docker.stack.namespace=phpcodeigniter"
 
     - name: Cleanup old images
       run: |

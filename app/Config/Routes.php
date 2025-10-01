@@ -7,6 +7,6 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 
-$routes->group('blog', ['namespace' => 'Modules\Admin\Controllers'], static function ($routes) {
-    $routes->get('/', 'Blog::index');
+$routes->group('admin', ['namespace' => 'Modules\Admin\Controllers'], static function ($routes) {
+    $routes->get('/', 'Admin::index');
 });
