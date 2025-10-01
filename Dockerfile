@@ -5,7 +5,7 @@ FROM php:8.3-apache
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     libpng-dev libjpeg-dev libfreetype6-dev libzip-dev zip unzip git \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd mysqli pdo pdo_mysql zip
+    && docker-php-ext-install gd mysqli pdo pdo_mysql zip intl
 
 # Instala Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -35,6 +35,7 @@ WORKDIR /var/www/html
 COPY . .
 
 # Instala dependências
+RUN git config --global --add safe.directory /var/www/html
 RUN composer install --no-dev --optimize-autoloader
 
 # Configura permissões
