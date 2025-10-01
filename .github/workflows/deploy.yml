@@ -17,7 +17,7 @@ jobs:
   deploy:
     # --- Ponto Chave: Direciona para o seu Self-Hosted Runner ---
     # O seu runner DEVE ter Docker e Docker Compose instalados.
-    runs-on: [self-hosted, linux, x64, custom-deployer] 
+    runs-on: self-hosted] 
     
     steps:
       - name: Checkout do Código
