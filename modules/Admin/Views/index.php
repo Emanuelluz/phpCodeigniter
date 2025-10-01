@@ -5,7 +5,7 @@
     <title>Blog Module</title>
 </head>
 <body>
-    <h1>Welcome to the Blog Module show!</h1>
+    <h1>Welcome to the Admin Module show!</h1>
     <p>This is a modular component in CodeIgniter 4.6.</p>
 </body>
 </html>
