@@ -2,7 +2,8 @@ version: "3.9"
 
 services:
   app:
-    build: .
+    image: codeigniter-app:latest
+  
     depends_on:
       - mariadb
     networks:
