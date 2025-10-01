@@ -2,8 +2,16 @@ name: CI/CD - Build and Deploy
 
 on:
   push:
-    branches: [ "main" ]
-    paths:
+    branches: [ "main"    - name: Check Docker Swarm status
+      run: |
+        echo "🔄 Checking Docker Swarm status..."
+        docker info | grep -i swarm || true
+        if ! docker info | grep -q "Swarm: active"; then
+          echo "⚠️  Swarm not active, initializing..."
+          docker swarm init
+        else
+          echo "✅ Swarm already active"
+        fi    paths:
       - 'app/**'
       - 'modules/**'
       - 'Dockerfile'
