@@ -1,103 +1,204 @@
-name: CI/CD - Build and Deploy
+name: CI/CD - Build and Deployname: CI/CD - Build and Deploy
 
-on:
-  push:
-    branches: [ "main"    - name: Check Docker Swarm status
-      run: |
-        echo "🔄 Checking Docker Swarm status..."
-        docker info | grep -i swarm || true
-        if ! docker info | grep -q "Swarm: active"; then
-          echo "⚠️  Swarm not active, initializing..."
-          docker swarm init
-        else
-          echo "✅ Swarm already active"
-        fi    paths:
+
+
+on:on:
+
+  push:  push:
+
+    branches: [ "main" ]    branches: [ "main"    - name: Check Docker Swarm status
+
+    paths:      run: |
+
+      - 'app/**'        echo "🔄 Checking Docker Swarm status..."
+
+      - 'modules/**'        docker info | grep -i swarm || true
+
+      - 'Dockerfile'        if ! docker info | grep -q "Swarm: active"; then
+
+      - 'docker-compose.yml'          echo "⚠️  Swarm not active, initializing..."
+
+      - 'composer.json'          docker swarm init
+
+      - 'composer.lock'        else
+
+  pull_request:          echo "✅ Swarm already active"
+
+    branches: [ "main" ]        fi    paths:
+
       - 'app/**'
-      - 'modules/**'
-      - 'Dockerfile'
+
+permissions:      - 'modules/**'
+
+  contents: read      - 'Dockerfile'
+
       - 'docker-compose.yml'
-      - 'composer.json'
-      - 'composer.lock'
+
+env:      - 'composer.json'
+
+  IMAGE_TAG: phpcodeigniter:latest      - 'composer.lock'
+
   pull_request:
-    branches: [ "main" ]
 
-permissions:
-  contents: read
+jobs:    branches: [ "main" ]
 
-env:
-  IMAGE_TAG: phpcodeigniter:latest
+  test:
+
+    name: Test & Validatepermissions:
+
+    runs-on: self-hosted  contents: read
+
+
+
+    steps:env:
+
+    - name: Checkout code  IMAGE_TAG: phpcodeigniter:latest
+
+      uses: actions/checkout@v4
 
 jobs:
-  test:
-    name: Test & Validate
-    runs-on: self-hosted
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - name: Install PHP extensions  test:
 
-    - name: Install PHP extensions
-      run: |
-        sudo apt-get update
+      run: |    name: Test & Validate
+
+        sudo apt-get update    runs-on: self-hosted
+
         sudo apt-get install -y php8.3-dom php8.3-xml php8.3-mbstring
 
-    - name: Validate composer.json and composer.lock
-      run: composer validate --strict
+    steps:
 
-    - name: Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v3
-      with:
+    - name: Validate composer.json and composer.lock    - name: Checkout code
+
+      run: composer validate --strict      uses: actions/checkout@v4
+
+
+
+    - name: Cache Composer packages    - name: Install PHP extensions
+
+      id: composer-cache      run: |
+
+      uses: actions/cache@v3        sudo apt-get update
+
+      with:        sudo apt-get install -y php8.3-dom php8.3-xml php8.3-mbstring
+
         path: vendor
-        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
+
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}    - name: Validate composer.json and composer.lock
+
+        restore-keys: |      run: composer validate --strict
+
           ${{ runner.os }}-php-
 
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
+    - name: Cache Composer packages
 
-    # Descomente se tiver testes configurados
-    # - name: Run test suite
-    #   run: composer run-script test
+    - name: Install dependencies      id: composer-cache
+
+      run: composer install --prefer-dist --no-progress      uses: actions/cache@v3
+
+      with:
+
+    # Descomente se tiver testes configurados        path: vendor
+
+    # - name: Run test suite        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+
+    #   run: composer run-script test        restore-keys: |
+
+          ${{ runner.os }}-php-
 
   deploy:
-    name: Build & Deploy
-    runs-on: self-hosted
+
+    name: Build & Deploy    - name: Install dependencies
+
+    runs-on: self-hosted      run: composer install --prefer-dist --no-progress
+
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
-    steps:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'    # Descomente se tiver testes configurados
+
+    # - name: Run test suite
+
+    steps:    #   run: composer run-script test
+
     - name: Checkout code
-      uses: actions/checkout@v4
 
-    - name: Build Docker image
-      run: |
-        echo "🐳 Building Docker image..."
+      uses: actions/checkout@v4  deploy:
+
+    name: Build & Deploy
+
+    - name: Build Docker image    runs-on: self-hosted
+
+      run: |    needs: test
+
+        echo "Building Docker image..."    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
         docker build -t ${{ env.IMAGE_TAG }} .
-        docker tag ${{ env.IMAGE_TAG }} phpcodeigniter:${{ github.sha }}
 
-    - name: Initialize Docker Swarm (if needed)
+        docker tag ${{ env.IMAGE_TAG }} phpcodeigniter:${{ github.sha }}    steps:
+
+    - name: Checkout code
+
+    - name: Check Docker Swarm status      uses: actions/checkout@v4
+
       run: |
+
+        echo "Checking Docker Swarm status..."    - name: Build Docker image
+
+        docker info | grep -i swarm || true      run: |
+
+        if ! docker info | grep -q "Swarm: active"; then        echo "🐳 Building Docker image..."
+
+          echo "Swarm not active, initializing..."        docker build -t ${{ env.IMAGE_TAG }} .
+
+          docker swarm init        docker tag ${{ env.IMAGE_TAG }} phpcodeigniter:${{ github.sha }}
+
+        else
+
+          echo "Swarm already active"    - name: Initialize Docker Swarm (if needed)
+
+        fi      run: |
+
         echo "� Checking Docker Swarm..."
-        docker swarm init || echo "Swarm already initialized"
 
-    - name: Deploy to Docker Swarm
+    - name: Deploy to Docker Swarm        docker swarm init || echo "Swarm already initialized"
+
       run: |
+
+        echo "Deploying stack to Docker Swarm..."    - name: Deploy to Docker Swarm
+
+        docker stack deploy -c docker-compose.yml phpcodeigniter --with-registry-auth      run: |
+
         echo "🚀 Deploying stack to Docker Swarm..."
-        docker stack deploy -c docker-compose.yml phpcodeigniter --with-registry-auth
 
-    - name: Wait for deployment
+    - name: Wait for deployment        docker stack deploy -c docker-compose.yml phpcodeigniter --with-registry-auth
+
       run: |
+
+        echo "Waiting for services to start..."    - name: Wait for deployment
+
+        sleep 15      run: |
+
         echo "⏳ Waiting for services to start..."
-        sleep 15
 
-    - name: Verify deployment
+    - name: Verify deployment        sleep 15
+
       run: |
-        echo "✅ Verifying stack deployment..."
+
+        echo "Verifying stack deployment..."    - name: Verify deployment
+
+        docker stack services phpcodeigniter      run: |
+
+        docker service ls --filter "label=com.docker.stack.namespace=phpcodeigniter"        echo "✅ Verifying stack deployment..."
+
         docker stack services phpcodeigniter
-        docker service ls --filter "label=com.docker.stack.namespace=phpcodeigniter"
 
-    - name: Cleanup old images
+    - name: Cleanup old images        docker service ls --filter "label=com.docker.stack.namespace=phpcodeigniter"
+
       run: |
+
+        echo "Cleaning up old images..."    - name: Cleanup old images
+
+        docker image prune -f      run: |
+
         echo "🧹 Cleaning up old images..."
         docker image prune -f
