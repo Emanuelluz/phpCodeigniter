@@ -1,11 +1,23 @@
 # Dockerfile
 FROM php:8.3-apache
 
-# Dependências
-RUN apt-get update && apt-get upgrade -y && apt-get install -y \
-    libpng-dev libjpeg-dev libfreetype6-dev libzip-dev libicu-dev zip unzip git \
+# Dependências de sistema e libs para compilar extensões
+# - bookworm usa libjpeg62-turbo-dev (não libjpeg-dev)
+# - intl precisa de libicu-dev e toolchain (g++)
+# - mbstring pode exigir libonig-dev em algumas bases
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libpng-dev \
+        libjpeg62-turbo-dev \
+        libfreetype6-dev \
+        libzip-dev \
+        libicu-dev \
+        libonig-dev \
+        g++ make autoconf pkg-config \
+        git unzip zip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd mysqli pdo pdo_mysql zip intl mbstring
+    && docker-php-ext-install -j"$(nproc)" gd mysqli pdo_mysql zip intl mbstring \
+    && rm -rf /var/lib/apt/lists/*
 
 # Instala Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
