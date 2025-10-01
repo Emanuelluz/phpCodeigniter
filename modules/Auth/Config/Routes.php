@@ -5,6 +5,9 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-$routes->get('login', 'Modules\\Auth\\Controllers\\AuthController::login');
-$routes->post('login', 'Modules\\Auth\\Controllers\\AuthController::doLogin');
-$routes->get('logout', 'Modules\\Auth\\Controllers\\AuthController::logout');
+
+$routes->group('', ['namespace' => 'Modules\\Auth\\Controllers'], static function (RouteCollection $routes) {
+	$routes->get('login', 'AuthController::login');
+	$routes->post('login', 'AuthController::doLogin');
+	$routes->get('logout', 'AuthController::logout');
+});
