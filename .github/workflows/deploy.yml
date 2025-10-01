@@ -1,34 +1,47 @@
-name: Build and Deploy
+name: Deploy Local com Self-Hosted Runner
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'app/**' 
+
+# Defina a tag para a imagem local
+env:
+  IMAGE_TAG: phpcodeigniter:latest
 
 jobs:
-  build-and-push:
-    runs-on: self-hosted  # Em vez de ubuntu-latest
-
+  deploy:
+    # --- Ponto Chave: Direciona para o seu Self-Hosted Runner ---
+    # O seu runner DEVE ter Docker e Docker Compose instalados.
+    runs-on: [self-hosted, linux, x64, custom-deployer] 
+    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout do Código
+        uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: 1. Build da Imagem Docker (Localmente)
+        # O self-hosted runner faz o build da imagem
+        run: |
+          echo "Iniciando build local..."
+          docker build -t ${{ env.IMAGE_TAG }} .
 
-    - name: Build Docker image locally
-      run: |
-        docker build -t phpcodeigniter:latest .
-        docker tag phpcodeigniter:latest phpcodeigniter:${{ github.sha }}
+      - name: 2. Parar Container Anterior (Opcional)
+        # Garante que a versão antiga seja derrubada antes de subir a nova
+        run: |
+          echo "Parando e removendo containers antigos..."
+          docker compose -f docker-compose.yml down || true
 
-    - name: Update docker-compose.yml
-      run: |
-        sed -i "s|image: phpcodeigniter:latest|image: phpcodeigniter:${{ github.sha }}|" docker-compose.yml
-
-    - name: Commit and push updated docker-compose.yml
-      run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git add docker-compose.yml
-        git commit -m "Update image tag to ${{ github.sha }}"
-        git push
+      - name: 3. Deploy com Docker Compose
+        # O Docker Compose usará a imagem recém-construída, 
+        # que está AGORA disponível LOCALMENTE no runner.
+        run: |
+          echo "Iniciando deploy com Docker Compose..."
+          docker compose -f docker-compose.yml up -d --build
+          
+      - name: Limpeza de Imagens Antigas (Opcional)
+        # Remove imagens não utilizadas para liberar espaço no runner
+        run: docker image prune -f
