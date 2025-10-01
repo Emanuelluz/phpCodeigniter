@@ -84,3 +84,25 @@ jobs:
           echo "Optionally prune all unused images (commented by default)"
           echo "# docker image prune -a -f"
 
+      - name: Wait for MariaDB to be ready
+        shell: bash
+        run: |
+          echo "Waiting for MariaDB service to be ready..."
+          for i in {1..60}; do
+            if docker service ps phpcodeigniter_mariadb --format '{{.CurrentState}}' | grep -qi running; then
+              break
+            fi
+            echo "MariaDB not ready yet ($i)..."; sleep 2
+          done
+
+      - name: Run migrations and seed (Shield)
+        shell: bash
+        run: |
+          # Executa spark em um container efêmero na mesma imagem, na rede interna do stack
+          docker run --rm \
+            --network phpcodeigniter_internal_net \
+            -v ${GITHUB_WORKSPACE}:/var/www/html \
+            -w /var/www/html \
+            phpcodeigniter:latest \
+            bash -lc "php spark migrate --all && php spark db:seed AdminUserSeeder"
+
