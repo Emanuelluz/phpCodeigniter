@@ -1,21 +1,32 @@
-name: PHP Composer
+name: CI/CD - Build and Deploy
 
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'app/**'
+      - 'modules/**'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'composer.json'
+      - 'composer.lock'
   pull_request:
     branches: [ "main" ]
 
 permissions:
   contents: read
 
-jobs:
-  build:
+env:
+  IMAGE_TAG: phpcodeigniter:latest
 
+jobs:
+  test:
+    name: Test & Validate
     runs-on: self-hosted
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
     - name: Install PHP extensions
       run: |
@@ -37,8 +48,43 @@ jobs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
 
-    # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
-    # Docs: https://getcomposer.org/doc/articles/scripts.md
-
+    # Descomente se tiver testes configurados
     # - name: Run test suite
     #   run: composer run-script test
+
+  deploy:
+    name: Build & Deploy
+    runs-on: self-hosted
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build Docker image
+      run: |
+        echo "🐳 Building Docker image..."
+        docker build -t ${{ env.IMAGE_TAG }} .
+        docker tag ${{ env.IMAGE_TAG }} phpcodeigniter:${{ github.sha }}
+
+    - name: Stop old containers
+      run: |
+        echo "🛑 Stopping old containers..."
+        docker compose down || true
+
+    - name: Deploy with Docker Compose
+      run: |
+        echo "🚀 Deploying with Docker Compose..."
+        docker compose up -d --build
+
+    - name: Verify deployment
+      run: |
+        echo "✅ Verifying deployment..."
+        docker compose ps
+        docker logs $(docker compose ps -q app) --tail 50 || true
+
+    - name: Cleanup old images
+      run: |
+        echo "🧹 Cleaning up old images..."
+        docker image prune -f
