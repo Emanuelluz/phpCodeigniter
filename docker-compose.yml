@@ -5,6 +5,9 @@ services:
     image: phpcodeigniter:latest
     deploy:
       replicas: 2
+      placement:
+        constraints:
+          - node.role == manager
       update_config:
         parallelism: 1
         delay: 10s

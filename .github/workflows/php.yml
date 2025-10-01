@@ -30,7 +30,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ env.IMAGE_TAG }} .
+          docker build --pull -t ${{ env.IMAGE_TAG }} .
 
       - name: Ensure Docker Swarm is active
         shell: bash
@@ -39,11 +39,29 @@ jobs:
             docker swarm init
           fi
 
+      - name: Stop and remove existing stack (zero-downtime not required)
+        shell: bash
+        run: |
+          if docker stack ls | grep -q "^phpcodeigniter\b"; then
+            echo "Removing existing stack phpcodeigniter..."
+            docker stack rm phpcodeigniter
+            # Aguarda remoção completa do stack (services/networks)
+            for i in {1..60}; do
+              docker stack ls | grep -q "^phpcodeigniter\b" || break
+              echo "Waiting stack removal... $i"; sleep 2
+            done
+          else
+            echo "No existing stack named phpcodeigniter."
+          fi
+
       - name: Deploy stack
         run: |
           docker stack deploy -c docker-compose.yml phpcodeigniter --with-registry-auth
 
       - name: Verify services
+        shell: bash
         run: |
-          docker stack services phpcodeigniter
+          docker stack ls
+          docker stack services phpcodeigniter || true
+          echo "Service tasks:" && docker service ps phpcodeigniter_app --no-trunc || true
 
