@@ -6,6 +6,6 @@
 </head>
 <body>
     <h1>Welcome to the Admin Module! </h1>
-    <p>This is a modular component in CodeIgniter 4.6 PHP 8.3.</p>
+    <p>This is a modular component in CodeIgniter 4.6 .</p>
 </body>
 </html>
