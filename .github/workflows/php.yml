@@ -39,6 +39,17 @@ jobs:
             docker swarm init
           fi
 
+      - name: Ensure external overlay network labnet exists
+        shell: bash
+        run: |
+          if ! docker network inspect labnet >/dev/null 2>&1; then
+            echo "Creating overlay network: labnet"
+            docker network create -d overlay --attachable labnet
+          else
+            echo "Overlay network 'labnet' already exists"
+          fi
+          echo "Networks snapshot:" && docker network ls | grep -E "labnet|phpcodeigniter|INGRESS|ingress" || true
+
       - name: Stop and remove existing stack (zero-downtime not required)
         shell: bash
         run: |
