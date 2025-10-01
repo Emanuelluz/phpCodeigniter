@@ -5,10 +5,11 @@ FROM php:8.3-apache
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     libpng-dev libjpeg-dev libfreetype6-dev libzip-dev libicu-dev zip unzip git \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd mysqli pdo pdo_mysql zip intl
+    && docker-php-ext-install gd mysqli pdo pdo_mysql zip intl mbstring
 
 # Instala Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
 # Ativa o mod_rewrite para CodeIgniter
 RUN a2enmod rewrite
@@ -36,7 +37,7 @@ COPY . .
 
 # Instala dependências
 RUN git config --global --add safe.directory /var/www/html
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
 # Configura CodeIgniter Shield (instala configs no app/Config)
 RUN php spark shield:setup || true
