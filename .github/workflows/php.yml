@@ -65,3 +65,11 @@ jobs:
           docker stack services phpcodeigniter || true
           echo "Service tasks:" && docker service ps phpcodeigniter_app --no-trunc || true
 
+      - name: Cleanup unused images
+        shell: bash
+        run: |
+          echo "Pruning dangling images..."
+          docker image prune -f
+          echo "Optionally prune all unused images (commented by default)"
+          echo "# docker image prune -a -f"
+
