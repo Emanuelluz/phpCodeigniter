@@ -11,7 +11,11 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
 RUN a2enmod rewrite
 
 # Permite overrides no .htaccess
-RUN echo '<Directory /var/www/html>\n\tAllowOverride All\n</Directory>' >> /etc/apache2/apache2.conf
+RUN echo '<Directory /var/www/html>\n\
+    Options Indexes FollowSymLinks\n\
+    AllowOverride All\n\
+    Require all granted\n\
+</Directory>' >> /etc/apache2/apache2.conf
 
 # Copia a aplicação
 WORKDIR /var/www/html

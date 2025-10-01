@@ -12,13 +12,26 @@ services:
       - internal_net
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.app.rule=Host(`pppr.ecl.dev.br`)" ## Dominio do app
-      - "traefik.http.services.app.loadbalancer.server.port=80"
+      - "traefik.docker.network=labnet"
+      
+      # Roteador HTTP (redirect para HTTPS)
+      - "traefik.http.routers.app-http.rule=Host(`pppr.ecl.dev.br`)"
+      - "traefik.http.routers.app-http.entrypoints=web"
+      - "traefik.http.routers.app-http.middlewares=redirect-to-https"
+      
+      # Roteador HTTPS
+      - "traefik.http.routers.app.rule=Host(`pppr.ecl.dev.br`)"
+      - "traefik.http.routers.app.entrypoints=websecure"
       - "traefik.http.routers.app.tls.certresolver=letsencryptresolver"
       - "traefik.http.routers.app.service=app"
-      - "traefik.docker.network=labnet" ## Nome da rede interna
-      - "traefik.http.routers.app.entrypoints=websecure"
-      - "traefik.http.routers.app.priority=1"
+      
+      # Service
+      - "traefik.http.services.app.loadbalancer.server.port=80"
+      
+      # Middleware redirect
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+
 
   mariadb:
     image: mariadb:11
