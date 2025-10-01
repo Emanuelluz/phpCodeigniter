@@ -5,6 +5,7 @@ services:
     image: codeigniter-app:latest
     environment:
       CI_ENVIRONMENT: development
+      BASE_URL: https://pppr.ecl.dev.br
       DATABASE_HOST: mariadb
       DATABASE_NAME: codeigniter
       DATABASE_USER: ciuser
