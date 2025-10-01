@@ -2,8 +2,7 @@ version: "3.9"
 
 services:
   app:
-  
-    image: codeigniter-app:latest
+    image: emanuelluz/phpcodeigniter:latest
   
     depends_on:
       - mariadb
