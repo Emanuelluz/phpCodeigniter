@@ -49,7 +49,10 @@ COPY . .
 
 # Instala dependências
 RUN git config --global --add safe.directory /var/www/html
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+# Ao adicionar novas dependências (ex.: Shield) o composer.lock precisa ser atualizado
+# Use update para sincronizar o lock e instalar dependências, depois otimiza autoloader
+RUN composer update --no-dev --prefer-dist --no-interaction \
+    && composer dump-autoload -o
 
 # Configura CodeIgniter Shield (instala configs no app/Config)
 RUN php spark shield:setup || true
