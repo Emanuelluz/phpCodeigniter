@@ -2,9 +2,7 @@ version: "3.9"
 
 services:
   app:
-    build: .
-    container_name: codeigniter-app
-    restart: always
+    image: codeigniter-app:latest
     environment:
       CI_ENVIRONMENT: development
       DATABASE_HOST: mariadb
