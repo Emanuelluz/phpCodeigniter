@@ -31,6 +31,9 @@ class AuthController extends BaseController
             return redirect()->back()->with('error', $result->reason() ?? 'Falha na autenticação.');
         }
 
+        // Regenera o ID de sessão após login para segurança
+        session()->regenerate(true);
+
         // Redireciona ao admin por padrão após login
         return redirect()->to('/admin');
     }

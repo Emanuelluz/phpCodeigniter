@@ -91,10 +91,10 @@ class Groups extends Controller
                 ->with('errors', $this->validator->getErrors());
         }
 
-        $name = $this->request->getPost('name');
-        $title = $this->request->getPost('title');
-        $description = $this->request->getPost('description');
-        $permissions = $this->request->getPost('permissions', []);
+    $name = (string) $this->request->getPost('name');
+    $title = (string) $this->request->getPost('title');
+    $description = (string) $this->request->getPost('description');
+    $permissions = (array) $this->request->getPost('permissions');
 
         // Verificar se o grupo já existe
         $currentGroups = setting('AuthGroups.groups', []);
@@ -189,9 +189,9 @@ class Groups extends Controller
                 ->with('errors', $this->validator->getErrors());
         }
 
-        $title = $this->request->getPost('title');
-        $description = $this->request->getPost('description');
-        $permissions = $this->request->getPost('permissions', []);
+    $title = (string) $this->request->getPost('title');
+    $description = (string) $this->request->getPost('description');
+    $permissions = (array) $this->request->getPost('permissions');
 
         try {
             // Atualizar grupo (simulado)
