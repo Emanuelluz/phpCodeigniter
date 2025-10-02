@@ -9,6 +9,10 @@ use CodeIgniter\Router\RouteCollection;
 // Rota padrão (homepage)
 $routes->get('/', 'Home::index');
 
+// Rotas de teste (temporárias)
+$routes->get('/test', 'Test::index');
+$routes->get('/test/db', 'Test::db');
+
 // Grupo de rotas para autenticação (Shield)
 $routes->group('/', static function ($routes) {
     // Rotas padrão do Shield (login, registro, reset etc.)
