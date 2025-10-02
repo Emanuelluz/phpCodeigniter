@@ -168,6 +168,33 @@
                         </div>
                     </div>
 
+                    <!-- System Configuration -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                        Configuração do Sistema
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-warning" role="alert">
+                                        <strong>Atenção!</strong> Os grupos Shield precisam ser criados no banco de dados.
+                                    </div>
+                                    <p class="text-muted">
+                                        Para que o sistema funcione corretamente, é necessário criar os grupos configurados no banco de dados.
+                                        Clique no botão abaixo para executar esta configuração inicial.
+                                    </p>
+                                    <a href="/test/seed-groups" class="btn btn-warning" target="_blank">
+                                        <i class="bi bi-gear me-2"></i>
+                                        Criar Grupos no Banco de Dados
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Recent Users -->
                     <div class="row">
                         <div class="col-12">
