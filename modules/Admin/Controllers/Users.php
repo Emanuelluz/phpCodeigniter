@@ -101,7 +101,7 @@ class Users extends BaseController
         }
         
         // Obter grupos disponíveis
-        $groups = setting('AuthGroups.groups', []);
+        $groups = setting('AuthGroups.groups') ?? [];
         
         return view('Modules\\Admin\\Views\\users\\edit', [
             'user' => $user,
