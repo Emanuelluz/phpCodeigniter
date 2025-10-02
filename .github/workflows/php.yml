@@ -112,6 +112,13 @@ jobs:
         shell: bash
         run: |
           CID=$(cat app_cid.txt)
+          echo "Testing database connection..."
+          for i in {1..30}; do
+            if docker exec "$CID" php -r "mysqli_connect('mariadb','ciuser','cipass','codeigniter',3306) or exit(1);"; then
+              echo "Database is ready"; break
+            fi
+            echo "Database not ready yet ($i)..."; sleep 2
+          done
           echo "Running migrations in container $CID"
           docker exec -w /var/www/html "$CID" php spark migrate --all
           echo "Seeding AdminUserSeeder"
