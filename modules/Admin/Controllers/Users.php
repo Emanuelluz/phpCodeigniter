@@ -46,11 +46,9 @@ class Users extends BaseController
     
     public function create()
     {
-        // Obter grupos disponíveis (fallback se null)
-        $groups = setting('AuthGroups.groups');
-        if ($groups === null) {
-            $groups = [];
-        }
+        // Obter grupos disponíveis
+        $authGroupsConfig = config('AuthGroups');
+        $groups = $authGroupsConfig->groups ?? [];
         
         return view('Modules\\Admin\\Views\\users\\create', [
             'groups' => array_keys($groups)
@@ -103,7 +101,8 @@ class Users extends BaseController
         }
         
         // Obter grupos disponíveis
-        $groups = setting('AuthGroups.groups') ?? [];
+        $authGroupsConfig = config('AuthGroups');
+        $groups = $authGroupsConfig->groups ?? [];
         
         return view('Modules\\Admin\\Views\\users\\edit', [
             'user' => $user,

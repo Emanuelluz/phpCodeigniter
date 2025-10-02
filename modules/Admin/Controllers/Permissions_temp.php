@@ -74,7 +74,7 @@ class Permissions extends Controller
         $description = $this->request->getPost('description');
 
         // Verificar se a permissão já existe
-        $currentPermissions = setting('AuthGroups.permissions', []);
+        $currentPermissions = $authGroupsConfig = config('AuthGroups'); $authGroupsConfig->permissions ?? [];
         if (isset($currentPermissions[$name])) {
             return redirect()->back()
                 ->withInput()
@@ -106,7 +106,7 @@ class Permissions extends Controller
         }
 
         // Verificar se a permissão existe
-        $permissions = setting('AuthGroups.permissions', []);
+        $permissions = $authGroupsConfig = config('AuthGroups'); $authGroupsConfig->permissions ?? [];
         if (!isset($permissions[$permissionName])) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
@@ -129,7 +129,7 @@ class Permissions extends Controller
         }
 
         // Verificar se a permissão existe
-        $permissions = setting('AuthGroups.permissions', []);
+        $permissions = $authGroupsConfig = config('AuthGroups'); $authGroupsConfig->permissions ?? [];
         if (!isset($permissions[$permissionName])) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
@@ -172,13 +172,13 @@ class Permissions extends Controller
         }
 
         // Verificar se a permissão existe
-        $permissions = setting('AuthGroups.permissions', []);
+        $permissions = $authGroupsConfig = config('AuthGroups'); $authGroupsConfig->permissions ?? [];
         if (!isset($permissions[$permissionName])) {
             return redirect()->back()->with('error', 'Permissão não encontrada.');
         }
 
         // Verificar se a permissão está sendo usada por algum grupo
-        $authMatrix = setting('AuthGroups.matrix', []);
+        $authMatrix = $authGroupsConfig = config('AuthGroups'); $authGroupsConfig->matrix ?? [];
         $groupsUsing = [];
         
         foreach ($authMatrix as $groupName => $groupPermissions) {
@@ -211,9 +211,9 @@ class Permissions extends Controller
         }
 
         // Obter configurações
-        $permissions = setting('AuthGroups.permissions', []);
-        $authGroups = setting('AuthGroups.groups', []);
-        $authMatrix = setting('AuthGroups.matrix', []);
+        $permissions = $authGroupsConfig = config('AuthGroups'); $authGroupsConfig->permissions ?? [];
+        $authGroups = $authGroupsConfig = config('AuthGroups'); $authGroupsConfig->groups ?? [];
+        $authMatrix = $authGroupsConfig = config('AuthGroups'); $authGroupsConfig->matrix ?? [];
 
         // Preparar matriz completa
         $matrix = [];

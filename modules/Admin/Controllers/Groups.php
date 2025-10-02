@@ -17,8 +17,9 @@ class Groups extends Controller
         }
 
         // Obter todos os grupos configurados - com fallback para array vazio
-        $authGroups = setting('AuthGroups.groups');
-        $authMatrix = setting('AuthGroups.matrix');
+        $authGroupsConfig = config('AuthGroups');
+        $authGroups = $authGroupsConfig->groups ?? [];
+        $authMatrix = $authGroupsConfig->matrix ?? [];
         
         // Verificar se as configurações existem
         if ($authGroups === null) {
@@ -64,7 +65,8 @@ class Groups extends Controller
         }
 
         // Obter todas as permissões disponíveis
-        $permissions = setting('AuthGroups.permissions', []);
+        $authGroupsConfig = config('AuthGroups');
+        $permissions = $authGroupsConfig->permissions ?? [];
 
         return view('Modules\\Admin\\Views\\groups\\create', [
             'permissions' => $permissions
