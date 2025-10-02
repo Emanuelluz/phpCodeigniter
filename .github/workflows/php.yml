@@ -95,14 +95,25 @@ jobs:
             echo "MariaDB not ready yet ($i)..."; sleep 2
           done
 
+      - name: Wait for App container
+        shell: bash
+        run: |
+          echo "Waiting for an app container to be running..."
+          for i in {1..60}; do
+            CID=$(docker ps --filter "name=phpcodeigniter_app" --format "{{.ID}}" | head -n 1)
+            if [ -n "$CID" ]; then
+              echo "Found app container: $CID"; echo "$CID" > app_cid.txt; break
+            fi
+            echo "App container not ready yet ($i)..."; sleep 2
+          done
+          test -s app_cid.txt || { echo "App container not found"; docker service ps phpcodeigniter_app; exit 1; }
+
       - name: Run migrations and seed (Shield)
         shell: bash
         run: |
-          # Executa spark em um container efêmero na mesma imagem, na rede interna do stack
-          docker run --rm \
-            --network phpcodeigniter_internal_net \
-            -v ${GITHUB_WORKSPACE}:/var/www/html \
-            -w /var/www/html \
-            phpcodeigniter:latest \
-            bash -lc "php spark migrate --all && php spark db:seed AdminUserSeeder"
+          CID=$(cat app_cid.txt)
+          echo "Running migrations in container $CID"
+          docker exec -w /var/www/html "$CID" php spark migrate --all
+          echo "Seeding AdminUserSeeder"
+          docker exec -w /var/www/html "$CID" php spark db:seed AdminUserSeeder
 
