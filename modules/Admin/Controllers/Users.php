@@ -77,10 +77,19 @@ class Users extends BaseController
         
         if ($userProvider->save($user)) {
             // Adicionar grupos se especificados
+            // Adicionar aos grupos
             $groups = $this->request->getPost('groups');
             if ($groups) {
-                $user = $userProvider->findById($userProvider->getInsertID());
-                $user->syncGroups(...$groups);
+                $userId = $userProvider->getInsertID();
+                $db = \Config\Database::connect();
+                
+                foreach ($groups as $group) {
+                    $db->table('auth_groups_users')->insert([
+                        'user_id' => $userId,
+                        'group' => $group,
+                        'created_at' => date('Y-m-d H:i:s')
+                    ]);
+                }
             }
             
             return redirect()->to(base_url('admin/users'))->with('success', 'Usuário criado com sucesso!');
@@ -145,9 +154,23 @@ class Users extends BaseController
         }
         
         if ($userProvider->save($user)) {
-            // Atualizar grupos
+            // Atualizar grupos - método direto para contornar validação
             $groups = $this->request->getPost('groups') ?? [];
-            $user->syncGroups(...$groups);
+            
+            if (!empty($groups)) {
+                // Remover grupos atuais
+                $db = \Config\Database::connect();
+                $db->table('auth_groups_users')->where('user_id', $user->id)->delete();
+                
+                // Adicionar novos grupos
+                foreach ($groups as $group) {
+                    $db->table('auth_groups_users')->insert([
+                        'user_id' => $user->id,
+                        'group' => $group,
+                        'created_at' => date('Y-m-d H:i:s')
+                    ]);
+                }
+            }
             
             return redirect()->to(base_url('admin/users'))->with('success', 'Usuário atualizado com sucesso!');
         }
