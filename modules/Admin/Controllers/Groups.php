@@ -125,7 +125,7 @@ class Groups extends Controller
                 'permissions' => $permissions
             ]);
 
-            return redirect()->to(base_url('admin/groups');
+            return redirect()->to(base_url('admin/groups'));
 
         } catch (\Exception $e) {
             return redirect()->back()
@@ -205,7 +205,7 @@ class Groups extends Controller
                 'permissions' => $permissions
             ]);
 
-            return redirect()->to(base_url('admin/groups');
+            return redirect()->to(base_url('admin/groups'));
 
         } catch (\Exception $e) {
             return redirect()->back()
@@ -239,7 +239,7 @@ class Groups extends Controller
             session()->setFlashdata('success', 'Grupo removido com sucesso! Remova a configuração do arquivo Config/AuthGroups.php para tornar permanente.');
             session()->setFlashdata('group_delete', $groupName);
 
-            return redirect()->to(base_url('admin/groups');
+            return redirect()->to(base_url('admin/groups'));
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Erro ao excluir grupo: ' . $e->getMessage());
