@@ -16,7 +16,7 @@ class App extends BaseConfig
      *
      * E.g., http://example.com/
      */
-    public string $baseURL = 'http://localhost:8080/';
+    public string $baseURL = 'https://pppr.ecl.dev.br/';
 
     /**
      * Allowed Hostnames in the Site URL other than the hostname in the baseURL.
@@ -180,7 +180,13 @@ class App extends BaseConfig
      *
      * @var array<string, string>
      */
-    public array $proxyIPs = [];
+    // Confie nos IPs da rede overlay/infra do Traefik. Ajuste conforme sua rede.
+    // Exemplos: '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16'
+    public array $proxyIPs = [
+        '10.0.0.0/8' => 'X-Forwarded-Proto',
+        '172.16.0.0/12' => 'X-Forwarded-Proto',
+        '192.168.0.0/16' => 'X-Forwarded-Proto',
+    ];
 
     /**
      * --------------------------------------------------------------------------

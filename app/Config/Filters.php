@@ -51,11 +51,11 @@ class Filters extends BaseFilters
      */
     public array $required = [
         'before' => [
-            'forcehttps', // Force Global Secure Requests
-            'pagecache',  // Web Page Caching
+            // 'forcehttps', // desabilitado: Traefik faz o redirect; evita loops atrás de proxy
+            // 'pagecache',  // desabilitado: evitar cache de respostas de auth/admin
         ],
         'after' => [
-            'pagecache',   // Web Page Caching
+            // 'pagecache',   // desabilitado para evitar cache em admin
             'performance', // Performance Metrics
             'toolbar',     // Debug Toolbar
         ],
