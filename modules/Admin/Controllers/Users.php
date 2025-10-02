@@ -82,7 +82,7 @@ class Users extends BaseController
                 $user->syncGroups(...$groups);
             }
             
-            return redirect()->to(base_url('admin/users')->with('success', 'Usuário criado com sucesso!');
+            return redirect()->to(base_url('admin/users'))->with('success', 'Usuário criado com sucesso!');
         }
         
         return redirect()->back()->withInput()->with('error', 'Erro ao criar usuário.');
@@ -145,7 +145,7 @@ class Users extends BaseController
             $groups = $this->request->getPost('groups') ?? [];
             $user->syncGroups(...$groups);
             
-            return redirect()->to(base_url('admin/users')->with('success', 'Usuário atualizado com sucesso!');
+            return redirect()->to(base_url('admin/users'))->with('success', 'Usuário atualizado com sucesso!');
         }
         
         return redirect()->back()->withInput()->with('error', 'Erro ao atualizar usuário.');
@@ -157,19 +157,19 @@ class Users extends BaseController
         $user = $userProvider->findById($id);
         
         if (!$user) {
-            return redirect()->to(base_url('admin/users')->with('error', 'Usuário não encontrado.');
+            return redirect()->to(base_url('admin/users'))->with('error', 'Usuário não encontrado.');
         }
         
         // Não permitir deletar o próprio usuário
         if ($user->id === auth()->id()) {
-            return redirect()->to(base_url('admin/users')->with('error', 'Você não pode deletar sua própria conta.');
+            return redirect()->to(base_url('admin/users'))->with('error', 'Você não pode deletar sua própria conta.');
         }
         
         if ($userProvider->delete($id, true)) {
-            return redirect()->to(base_url('admin/users')->with('success', 'Usuário excluído com sucesso!');
+            return redirect()->to(base_url('admin/users'))->with('success', 'Usuário excluído com sucesso!');
         }
         
-        return redirect()->to(base_url('admin/users')->with('error', 'Erro ao excluir usuário.');
+    return redirect()->to(base_url('admin/users'))->with('error', 'Erro ao excluir usuário.');
     }
     
     public function toggleStatus($id)
