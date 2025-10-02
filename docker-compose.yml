@@ -70,5 +70,4 @@ networks:
     name: labnet
   internal_net:
     driver: overlay
-    name: phpcodeigniter_internal_net
     attachable: true

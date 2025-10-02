@@ -73,40 +73,41 @@ jobs:
             echo "No existing stack named phpcodeigniter."
           fi
 
-      - name: Ensure internal networks are ready
+      - name: Clean orphaned networks if any
         shell: bash
         run: |
-          echo "Pre-creating internal networks if needed..."
-          # Verificar se a rede interna existe, se não criar
-          if ! docker network inspect phpcodeigniter_internal_net >/dev/null 2>&1; then
-            echo "Creating overlay network: phpcodeigniter_internal_net"
-            docker network create -d overlay --attachable phpcodeigniter_internal_net
-          else
-            echo "Network 'phpcodeigniter_internal_net' already exists"
-          fi
-          echo "Networks ready:" && docker network ls | grep -E "phpcodeigniter|labnet" || true
+          echo "Cleaning any orphaned phpcodeigniter networks..."
+          # Remove redes órfãs do phpcodeigniter se existirem
+          docker network ls --filter "name=phpcodeigniter" --format "{{.Name}}" | while read network; do
+            if [ ! -z "$network" ]; then
+              echo "Removing orphaned network: $network"
+              docker network rm "$network" 2>/dev/null || echo "Network $network already removed or in use"
+            fi
+          done
+          
+          # Force cleanup de recursos órfãos do sistema
+          echo "Running system cleanup..."
+          docker system prune -f --filter "label=com.docker.stack.namespace=phpcodeigniter" || true
+          
+          # Aguardar um pouco para estabilizar
+          echo "Waiting for system stabilization..."
+          sleep 5
+          
+          echo "Final network state:"
+          docker network ls | grep -E "phpcodeigniter|labnet|NAME" || true
 
       - name: Deploy stack
         shell: bash
         run: |
-          echo "Deploying stack with retry mechanism..."
-          for attempt in {1..3}; do
-            echo "Deploy attempt $attempt/3"
-            if docker stack deploy -c docker-compose.yml phpcodeigniter --with-registry-auth; then
-              echo "Stack deployed successfully on attempt $attempt"
-              break
-            else
-              echo "Deploy failed on attempt $attempt"
-              if [ $attempt -eq 3 ]; then
-                echo "All deploy attempts failed"
-                exit 1
-              fi
-              echo "Waiting 10 seconds before retry..."
-              sleep 10
-              # Limpar possíveis recursos órfãos
-              docker system prune -f --filter "label=com.docker.stack.namespace=phpcodeigniter" || true
-            fi
-          done
+          echo "Deploying stack..."
+          # Listar redes antes do deploy para debug
+          echo "Networks before deploy:"
+          docker network ls | grep -E "phpcodeigniter|labnet|NAME" || true
+          
+          # Deploy do stack
+          docker stack deploy -c docker-compose.yml phpcodeigniter --with-registry-auth
+          
+          echo "Stack deployed successfully"
 
       - name: Verify services
         shell: bash
