@@ -31,4 +31,45 @@ class Test extends Controller
             ]);
         }
     }
+    
+    public function migrate()
+    {
+        try {
+            $migrate = \Config\Services::migrations();
+            
+            // Executar migrações
+            $migrate->latest();
+            
+            return json_encode([
+                'status' => 'success',
+                'message' => 'Migrações executadas com sucesso'
+            ]);
+        } catch (\Exception $e) {
+            return json_encode([
+                'status' => 'error',
+                'message' => 'Erro ao executar migrações',
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+    
+    public function tables()
+    {
+        try {
+            $db = \Config\Database::connect();
+            $tables = $db->listTables();
+            
+            return json_encode([
+                'status' => 'success',
+                'message' => 'Tabelas do banco de dados',
+                'tables' => $tables
+            ]);
+        } catch (\Exception $e) {
+            return json_encode([
+                'status' => 'error',
+                'message' => 'Erro ao listar tabelas',
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
 }

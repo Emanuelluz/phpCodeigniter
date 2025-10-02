@@ -12,6 +12,8 @@ $routes->get('/', 'Home::index');
 // Rotas de teste (temporárias)
 $routes->get('/test', 'Test::index');
 $routes->get('/test/db', 'Test::db');
+$routes->get('/test/migrate', 'Test::migrate');
+$routes->get('/test/tables', 'Test::tables');
 
 // Grupo de rotas para autenticação (Shield)
 $routes->group('/', static function ($routes) {
