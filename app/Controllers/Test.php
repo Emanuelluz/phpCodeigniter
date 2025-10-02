@@ -87,27 +87,40 @@ class Test extends Controller
                 ]);
             }
             
-            // Usar o GroupModel do Shield para criar os grupos
+            // Usar o GroupModel do Shield diretamente
             $groupModel = model(\CodeIgniter\Shield\Models\GroupModel::class);
+            
+            // Verificar estrutura da tabela
+            $db = \Config\Database::connect();
+            $fields = $db->getFieldData('auth_groups');
             
             $created = [];
             $skipped = [];
+            $tableStructure = [];
+            
+            foreach ($fields as $field) {
+                $tableStructure[] = $field->name . ' (' . $field->type . ')';
+            }
             
             foreach ($groups as $name => $info) {
-                // Verificar se o grupo já existe
-                if ($groupModel->where('name', $name)->first()) {
+                // Verificar se o grupo já existe usando a estrutura correta
+                $exists = $db->table('auth_groups')
+                    ->where('group', $name)
+                    ->countAllResults() > 0;
+                    
+                if ($exists) {
                     $skipped[] = $name;
                     continue;
                 }
                 
-                // Criar o grupo
+                // Criar o grupo usando SQL direto
                 $data = [
-                    'name' => $name,
+                    'group' => $name,
                     'title' => $info['title'] ?? ucfirst($name),
                     'description' => $info['description'] ?? ''
                 ];
                 
-                if ($groupModel->insert($data)) {
+                if ($db->table('auth_groups')->insert($data)) {
                     $created[] = $name;
                 }
             }
@@ -117,15 +130,18 @@ class Test extends Controller
                 'message' => 'Grupos processados',
                 'created' => $created,
                 'skipped' => $skipped,
-                'total_groups' => count($groups)
-            ]);
+                'total_groups' => count($groups),
+                'table_structure' => $tableStructure
+            ], JSON_PRETTY_PRINT);
             
         } catch (\Exception $e) {
             return json_encode([
                 'status' => 'error',
                 'message' => 'Erro ao criar grupos',
-                'error' => $e->getMessage()
-            ]);
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ], JSON_PRETTY_PRINT);
         }
     }
     
