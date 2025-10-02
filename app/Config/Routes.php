@@ -20,6 +20,7 @@ $routes->get('/test/activate-admin', 'Test::activateAdmin');
 $routes->get('/test/login-admin', 'Test::loginAdmin');
 $routes->get('/test/debug-user', 'DebugUser::index');
 $routes->get('/test/cookie-test', 'CookieTest::index');
+$routes->get('/test-permissions', 'TestPermissions::index');
 
 // Grupo de rotas para autenticação (Shield)
 $routes->group('/', static function ($routes) {
@@ -34,40 +35,40 @@ $routes->group('/', static function ($routes) {
 
 // Grupo de rotas administrativas protegidas
 $routes->group('admin', ['namespace' => 'Modules\Admin\Controllers', 'filter' => 'session'], static function ($routes) {
-    // Dashboard administrativo
-    $routes->get('/', 'Admin::index');
+    // Dashboard administrativo - requer acesso admin
+    $routes->get('/', 'Admin::index', ['filter' => 'permission:admin.access']);
     
-    // Rotas de gerenciamento de usuários
-    $routes->group('users', static function ($routes) {
-        $routes->get('/', 'Users::index');
-        $routes->get('create', 'Users::create');
-        $routes->post('store', 'Users::store');
-        $routes->get('edit/(:num)', 'Users::edit/$1');
-        $routes->post('update/(:num)', 'Users::update/$1');
-        $routes->post('delete/(:num)', 'Users::delete/$1');
-        $routes->post('toggle-status/(:num)', 'Users::toggleStatus/$1');
+    // Rotas de gerenciamento de usuários - requer permissões específicas
+    $routes->group('users', ['filter' => 'permission:admin.access'], static function ($routes) {
+        $routes->get('/', 'Users::index', ['filter' => 'permission:users.view']);
+        $routes->get('create', 'Users::create', ['filter' => 'permission:users.create']);
+        $routes->post('store', 'Users::store', ['filter' => 'permission:users.create']);
+        $routes->get('edit/(:num)', 'Users::edit/$1', ['filter' => 'permission:users.edit']);
+        $routes->post('update/(:num)', 'Users::update/$1', ['filter' => 'permission:users.edit']);
+        $routes->post('delete/(:num)', 'Users::delete/$1', ['filter' => 'permission:users.delete']);
+        $routes->post('toggle-status/(:num)', 'Users::toggleStatus/$1', ['filter' => 'permission:users.edit']);
     });
     
-    // Rotas de gerenciamento de grupos
-    $routes->group('groups', static function ($routes) {
-        $routes->get('/', 'Groups::index');
-        $routes->get('create', 'Groups::create');
-        $routes->post('store', 'Groups::store');
-        $routes->get('edit/(:segment)', 'Groups::edit/$1');
-        $routes->post('update/(:segment)', 'Groups::update/$1');
-        $routes->post('delete/(:segment)', 'Groups::delete/$1');
-        $routes->get('users/(:segment)', 'Groups::users/$1');
+    // Rotas de gerenciamento de grupos - requer permissões específicas
+    $routes->group('groups', ['filter' => 'permission:admin.access'], static function ($routes) {
+        $routes->get('/', 'Groups::index', ['filter' => 'permission:groups.view']);
+        $routes->get('create', 'Groups::create', ['filter' => 'permission:groups.create']);
+        $routes->post('store', 'Groups::store', ['filter' => 'permission:groups.create']);
+        $routes->get('edit/(:segment)', 'Groups::edit/$1', ['filter' => 'permission:groups.edit']);
+        $routes->post('update/(:segment)', 'Groups::update/$1', ['filter' => 'permission:groups.edit']);
+        $routes->post('delete/(:segment)', 'Groups::delete/$1', ['filter' => 'permission:groups.delete']);
+        $routes->get('users/(:segment)', 'Groups::users/$1', ['filter' => 'permission:groups.view']);
     });
     
-    // Rotas de gerenciamento de permissões
-    $routes->group('permissions', static function ($routes) {
-        $routes->get('/', 'Permissions::index');
-        $routes->get('create', 'Permissions::create');
-        $routes->post('store', 'Permissions::store');
-        $routes->get('edit/(:segment)', 'Permissions::edit/$1');
-        $routes->post('update/(:segment)', 'Permissions::update/$1');
-        $routes->post('delete/(:segment)', 'Permissions::delete/$1');
-        $routes->get('matrix', 'Permissions::matrix');
+    // Rotas de gerenciamento de permissões - requer permissões específicas
+    $routes->group('permissions', ['filter' => 'permission:admin.access'], static function ($routes) {
+        $routes->get('/', 'Permissions::index', ['filter' => 'permission:permissions.view']);
+        $routes->get('create', 'Permissions::create', ['filter' => 'permission:permissions.create']);
+        $routes->post('store', 'Permissions::store', ['filter' => 'permission:permissions.create']);
+        $routes->get('edit/(:segment)', 'Permissions::edit/$1', ['filter' => 'permission:permissions.edit']);
+        $routes->post('update/(:segment)', 'Permissions::update/$1', ['filter' => 'permission:permissions.edit']);
+        $routes->post('delete/(:segment)', 'Permissions::delete/$1', ['filter' => 'permission:permissions.delete']);
+        $routes->get('matrix', 'Permissions::matrix', ['filter' => 'permission:permissions.view']);
         $routes->post('update-matrix', 'Permissions::updateMatrix');
     });
 });
