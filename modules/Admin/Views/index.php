@@ -14,6 +14,6 @@
     remover o stack anterior,
     rebuildar a imagem com pull,
     e redeployar o stack.
-    Assim, mudanças no index.php passam a reflet
+    Assim, mudanças no index.php passam a refleter imediatamente.
 </body>
 </html>
