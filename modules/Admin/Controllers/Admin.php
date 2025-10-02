@@ -8,8 +8,20 @@ class Admin extends BaseController
 {
     public function index()
     {
+        // Debug: verificar autenticação
+        if (!auth()->loggedIn()) {
+            // Se não estiver logado, redirecionar para login com mensagem
+            session()->setFlashdata('error', 'Você precisa estar logado para acessar esta área.');
+            return redirect()->to('/login');
+        }
+        
         // Verifica se o usuário está autenticado (já protegido pelo filtro 'session')
         $user = auth()->user();
+        
+        if (!$user) {
+            session()->setFlashdata('error', 'Usuário não encontrado. Faça login novamente.');
+            return redirect()->to('/login');
+        }
         
         // Obtém estatísticas para o dashboard
         $userProvider = auth()->getProvider();

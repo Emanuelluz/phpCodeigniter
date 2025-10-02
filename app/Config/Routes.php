@@ -15,6 +15,7 @@ $routes->get('/test/db', 'Test::db');
 $routes->get('/test/migrate', 'Test::migrate');
 $routes->get('/test/tables', 'Test::tables');
 $routes->get('/test/seed-groups', 'Test::seedGroups');
+$routes->get('/test/debug-auth', 'Test::debugAuth');
 
 // Grupo de rotas para autenticação (Shield)
 $routes->group('/', static function ($routes) {

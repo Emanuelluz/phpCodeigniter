@@ -128,4 +128,47 @@ class Test extends Controller
             ]);
         }
     }
+    
+    public function debugAuth()
+    {
+        try {
+            $auth = service('auth');
+            $session = service('session');
+            
+            // Verificar se usuário está logado
+            $user = $auth->user();
+            $isLoggedIn = $auth->loggedIn();
+            
+            // Verificar configurações
+            $config = config('Auth');
+            
+            return json_encode([
+                'status' => 'success',
+                'session_id' => session_id(),
+                'is_logged_in' => $isLoggedIn,
+                'user_id' => $user ? $user->id : null,
+                'user_username' => $user ? $user->username : null,
+                'session_data' => $session->get(),
+                'auth_config' => [
+                    'recordLoginAttempts' => $config->recordLoginAttempts ?? null,
+                    'allowRegistration' => $config->allowRegistration ?? null,
+                    'sessionConfig' => [
+                        'field' => $config->sessionConfig['field'] ?? null,
+                    ]
+                ],
+                'redirect_config' => [
+                    'loginRedirect' => site_url('admin'),
+                    'current_url' => current_url(),
+                    'base_url' => base_url()
+                ]
+            ], JSON_PRETTY_PRINT);
+            
+        } catch (\Exception $e) {
+            return json_encode([
+                'status' => 'error',
+                'message' => 'Erro no debug auth',
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
 }

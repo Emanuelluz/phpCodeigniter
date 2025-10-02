@@ -34,8 +34,13 @@ class AuthController extends BaseController
         // Regenera o ID de sessão após login para segurança
         session()->regenerate(true);
 
+        // Debug: verificar se usuário está logado
+        if (!auth()->loggedIn()) {
+            return redirect()->back()->with('error', 'Erro na autenticação. Tente novamente.');
+        }
+
         // Redireciona ao admin por padrão após login
-        return redirect()->to('/admin');
+        return redirect()->to('/admin')->with('success', 'Login realizado com sucesso!');
     }
 
     public function logout(): RedirectResponse

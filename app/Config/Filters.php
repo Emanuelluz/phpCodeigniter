@@ -34,6 +34,14 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
+        
+        // Shield filters
+        'session'       => \CodeIgniter\Shield\Filters\SessionAuth::class,
+        'tokens'        => \CodeIgniter\Shield\Filters\TokenAuth::class,
+        'chain'         => \CodeIgniter\Shield\Filters\ChainAuth::class,
+        'auth-rates'    => \CodeIgniter\Shield\Filters\AuthRates::class,
+        'group'         => \CodeIgniter\Shield\Filters\GroupFilter::class,
+        'permission'    => \CodeIgniter\Shield\Filters\PermissionFilter::class,
     ];
 
     /**
