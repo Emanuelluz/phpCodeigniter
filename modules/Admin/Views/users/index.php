@@ -44,28 +44,31 @@
                         Admin Panel
                     </h5>
                     <nav class="nav flex-column">
-                        <a class="nav-link" href="/admin">
+                        <a class="nav-link" href="<?= base_url('admin') ?>">
+                            <i class="bi bi-speedometer2 me-2"></i>
+                            Dashboard
+                        <a class="nav-link" href="<?= base_url('admin') ?>">
                             <i class="bi bi-speedometer2 me-2"></i>
                             Dashboard
                         </a>
-                        <a class="nav-link active" href="/admin/users">
+                        <a class="nav-link active" href="<?= base_url('admin/users') ?>">
                             <i class="bi bi-people me-2"></i>
                             Usuários
                         </a>
-                        <a class="nav-link" href="/admin/groups">
+                        <a class="nav-link" href="<?= base_url('admin/groups') ?>">
                             <i class="bi bi-collection me-2"></i>
                             Grupos
                         </a>
-                        <a class="nav-link" href="/admin/permissions">
+                        <a class="nav-link" href="<?= base_url('admin/permissions') ?>">
                             <i class="bi bi-key me-2"></i>
                             Permissões
                         </a>
                         <hr class="text-white-50">
-                        <a class="nav-link" href="/">
+                        <a class="nav-link" href="<?= base_url('/') ?>">
                             <i class="bi bi-house me-2"></i>
                             Ir para o Site
                         </a>
-                        <a class="nav-link" href="/logout">
+                        <a class="nav-link" href="<?= base_url('logout') ?>">
                             <i class="bi bi-box-arrow-right me-2"></i>
                             Sair
                         </a>
@@ -128,7 +131,7 @@
                                     </form>
                                 </div>
                                 <div class="col-md-6 text-end">
-                                    <a href="/admin/users/create" class="btn btn-primary">
+                                    <a href="<?= base_url('admin/users/create') ?>" class="btn btn-primary">
                                         <i class="bi bi-plus-circle me-1"></i>
                                         Novo Usuário
                                     </a>
@@ -205,7 +208,7 @@
                                             </td>
                                             <td>
                                                 <div class="btn-group btn-group-sm">
-                                                    <a href="/admin/users/edit/<?= $user->id ?>" 
+                                                    <a href="<?= base_url('admin/users/edit/' . $user->id) ?>" 
                                                        class="btn btn-outline-primary" 
                                                        title="Editar">
                                                         <i class="bi bi-pencil"></i>
@@ -275,7 +278,7 @@
                 const isActive = this.checked;
                 
                 try {
-                    const response = await fetch(`/admin/users/toggle-status/${userId}`, {
+                    const response = await fetch(`<?= base_url('admin/users/toggle-status') ?>/${userId}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -310,7 +313,7 @@
                 const username = this.dataset.username;
                 
                 document.getElementById('deleteUsername').textContent = username;
-                document.getElementById('deleteForm').action = `/admin/users/delete/${userId}`;
+                document.getElementById('deleteForm').action = `<?= base_url('admin/users/delete') ?>/${userId}`;
                 
                 new bootstrap.Modal(document.getElementById('deleteModal')).show();
             });

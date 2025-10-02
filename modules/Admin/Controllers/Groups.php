@@ -13,31 +13,42 @@ class Groups extends Controller
     {
         // Verificar se o usuário está logado
         if (!auth()->loggedIn()) {
-            return redirect()->to('/login');
+            return redirect()->to(url_to('login'));
         }
 
-        // Obter todos os grupos configurados
-        $authGroups = setting('AuthGroups.groups', []);
-        $authMatrix = setting('AuthGroups.matrix', []);
+        // Obter todos os grupos configurados - com fallback para array vazio
+        $authGroups = setting('AuthGroups.groups');
+        $authMatrix = setting('AuthGroups.matrix');
+        
+        // Verificar se as configurações existem
+        if ($authGroups === null) {
+            $authGroups = [];
+        }
+        if ($authMatrix === null) {
+            $authMatrix = [];
+        }
         
         // Preparar dados dos grupos com estatísticas
         $groups = [];
         $userProvider = auth()->getProvider();
         
-        foreach ($authGroups as $groupName => $groupConfig) {
-            // Contar usuários neste grupo - método personalizado
-            $userCount = $this->countUsersInGroup($groupName);
-            
-            // Obter permissões do grupo
-            $permissions = $authMatrix[$groupName] ?? [];
-            
-            $groups[] = [
-                'name' => $groupName,
-                'title' => $groupConfig['title'] ?? $groupName,
-                'description' => $groupConfig['description'] ?? '',
-                'permissions' => $permissions,
-                'user_count' => $userCount
-            ];
+        // Verificar se $authGroups é um array antes do foreach
+        if (is_array($authGroups)) {
+            foreach ($authGroups as $groupName => $groupConfig) {
+                // Contar usuários neste grupo - método personalizado
+                $userCount = $this->countUsersInGroup($groupName);
+                
+                // Obter permissões do grupo
+                $permissions = is_array($authMatrix) ? ($authMatrix[$groupName] ?? []) : [];
+                
+                $groups[] = [
+                    'name' => $groupName,
+                    'title' => is_array($groupConfig) ? ($groupConfig['title'] ?? $groupName) : $groupName,
+                    'description' => is_array($groupConfig) ? ($groupConfig['description'] ?? '') : '',
+                    'permissions' => $permissions,
+                    'user_count' => $userCount
+                ];
+            }
         }
 
         return view('Modules\\Admin\\Views\\groups\\index', [
@@ -49,7 +60,7 @@ class Groups extends Controller
     {
         // Verificar se o usuário está logado
         if (!auth()->loggedIn()) {
-            return redirect()->to('/login');
+            return redirect()->to(url_to('login'));
         }
 
         // Obter todas as permissões disponíveis
@@ -64,7 +75,7 @@ class Groups extends Controller
     {
         // Verificar se o usuário está logado
         if (!auth()->loggedIn()) {
-            return redirect()->to('/login');
+            return redirect()->to(url_to('login'));
         }
 
         // Validação
@@ -114,7 +125,7 @@ class Groups extends Controller
                 'permissions' => $permissions
             ]);
 
-            return redirect()->to('/admin/groups');
+            return redirect()->to(base_url('admin/groups');
 
         } catch (\Exception $e) {
             return redirect()->back()
@@ -127,7 +138,7 @@ class Groups extends Controller
     {
         // Verificar se o usuário está logado
         if (!auth()->loggedIn()) {
-            return redirect()->to('/login');
+            return redirect()->to(url_to('login'));
         }
 
         // Verificar se o grupo existe
@@ -157,7 +168,7 @@ class Groups extends Controller
     {
         // Verificar se o usuário está logado
         if (!auth()->loggedIn()) {
-            return redirect()->to('/login');
+            return redirect()->to(url_to('login'));
         }
 
         // Verificar se o grupo existe
@@ -194,7 +205,7 @@ class Groups extends Controller
                 'permissions' => $permissions
             ]);
 
-            return redirect()->to('/admin/groups');
+            return redirect()->to(base_url('admin/groups');
 
         } catch (\Exception $e) {
             return redirect()->back()
@@ -207,7 +218,7 @@ class Groups extends Controller
     {
         // Verificar se o usuário está logado
         if (!auth()->loggedIn()) {
-            return redirect()->to('/login');
+            return redirect()->to(url_to('login'));
         }
 
         // Verificar se o grupo existe
@@ -228,7 +239,7 @@ class Groups extends Controller
             session()->setFlashdata('success', 'Grupo removido com sucesso! Remova a configuração do arquivo Config/AuthGroups.php para tornar permanente.');
             session()->setFlashdata('group_delete', $groupName);
 
-            return redirect()->to('/admin/groups');
+            return redirect()->to(base_url('admin/groups');
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Erro ao excluir grupo: ' . $e->getMessage());
@@ -239,7 +250,7 @@ class Groups extends Controller
     {
         // Verificar se o usuário está logado
         if (!auth()->loggedIn()) {
-            return redirect()->to('/login');
+            return redirect()->to(url_to('login'));
         }
 
         // Verificar se o grupo existe

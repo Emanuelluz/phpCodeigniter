@@ -58,28 +58,28 @@
                         Admin Panel
                     </h5>
                     <nav class="nav flex-column">
-                        <a class="nav-link active" href="/admin">
+                        <a class="nav-link active" href="<?= base_url('admin') ?>">
                             <i class="bi bi-speedometer2 me-2"></i>
                             Dashboard
                         </a>
-                        <a class="nav-link" href="/admin/users">
+                        <a class="nav-link" href="<?= base_url('admin/users') ?>">
                             <i class="bi bi-people me-2"></i>
                             Usuários
                         </a>
-                        <a class="nav-link" href="/admin/groups">
+                        <a class="nav-link" href="<?= base_url('admin/groups') ?>">
                             <i class="bi bi-collection me-2"></i>
                             Grupos
                         </a>
-                        <a class="nav-link" href="/admin/permissions">
+                        <a class="nav-link" href="<?= base_url('admin/permissions') ?>">
                             <i class="bi bi-key me-2"></i>
                             Permissões
                         </a>
                         <hr class="text-white-50">
-                        <a class="nav-link" href="/">
+                        <a class="nav-link" href="<?= base_url('/') ?>">
                             <i class="bi bi-house me-2"></i>
                             Ir para o Site
                         </a>
-                        <a class="nav-link" href="/logout">
+                        <a class="nav-link" href="<?= base_url('logout') ?>">
                             <i class="bi bi-box-arrow-right me-2"></i>
                             Sair
                         </a>

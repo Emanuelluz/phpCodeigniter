@@ -12,23 +12,35 @@ class Permissions extends Controller
     {
         // Verificar se o usuário está logado
         if (!auth()->loggedIn()) {
-            return redirect()->to('/login');
+            return redirect()->to(url_to('login'));
         }
 
-        // Obter todas as permissões configuradas
-        $permissions = setting('AuthGroups.permissions', []);
+        // Obter todas as permissões configuradas - com fallback
+        $permissions = setting('AuthGroups.permissions');
+        if ($permissions === null) {
+            $permissions = [];
+        }
         
-        // Obter matriz de grupos e permissões
-        $authGroups = setting('AuthGroups.groups', []);
-        $authMatrix = setting('AuthGroups.matrix', []);
+        // Obter matriz de grupos e permissões - com fallback
+        $authGroups = setting('AuthGroups.groups');
+        $authMatrix = setting('AuthGroups.matrix');
+        
+        if ($authGroups === null) {
+            $authGroups = [];
+        }
+        if ($authMatrix === null) {
+            $authMatrix = [];
+        }
 
         // Preparar matriz para exibição
         $matrix = [];
-        foreach ($authGroups as $groupName => $groupConfig) {
-            $matrix[$groupName] = [
-                'title' => $groupConfig['title'] ?? $groupName,
-                'permissions' => $authMatrix[$groupName] ?? []
-            ];
+        if (is_array($authGroups)) {
+            foreach ($authGroups as $groupName => $groupConfig) {
+                $matrix[$groupName] = [
+                    'title' => is_array($groupConfig) ? ($groupConfig['title'] ?? $groupName) : $groupName,
+                    'permissions' => is_array($authMatrix) ? ($authMatrix[$groupName] ?? []) : []
+                ];
+            }
         }
 
         return view('Modules\\Admin\\Views\\permissions\\index', [
@@ -42,7 +54,7 @@ class Permissions extends Controller
     {
         // Verificar se o usuário está logado
         if (!auth()->loggedIn()) {
-            return redirect()->to('/login');
+            return redirect()->to(url_to('login'));
         }
 
         return view('Modules\\Admin\\Views\\permissions\\create');
@@ -52,7 +64,7 @@ class Permissions extends Controller
     {
         // Verificar se o usuário está logado
         if (!auth()->loggedIn()) {
-            return redirect()->to('/login');
+            return redirect()->to(url_to('login'));
         }
 
         // Validação
@@ -86,7 +98,7 @@ class Permissions extends Controller
                 'description' => $description
             ]);
 
-            return redirect()->to('/admin/permissions');
+            return redirect()->to(base_url('admin/permissions'));
 
         } catch (\Exception $e) {
             return redirect()->back()
@@ -99,7 +111,7 @@ class Permissions extends Controller
     {
         // Verificar se o usuário está logado
         if (!auth()->loggedIn()) {
-            return redirect()->to('/login');
+            return redirect()->to(url_to('login'));
         }
 
         // Verificar se a permissão existe
@@ -122,7 +134,7 @@ class Permissions extends Controller
     {
         // Verificar se o usuário está logado
         if (!auth()->loggedIn()) {
-            return redirect()->to('/login');
+            return redirect()->to(url_to('login'));
         }
 
         // Verificar se a permissão existe
@@ -152,7 +164,7 @@ class Permissions extends Controller
                 'description' => $description
             ]);
 
-            return redirect()->to('/admin/permissions');
+            return redirect()->to(base_url('admin/permissions'));
 
         } catch (\Exception $e) {
             return redirect()->back()
@@ -165,7 +177,7 @@ class Permissions extends Controller
     {
         // Verificar se o usuário está logado
         if (!auth()->loggedIn()) {
-            return redirect()->to('/login');
+            return redirect()->to(url_to('login'));
         }
 
         // Verificar se a permissão existe
@@ -193,7 +205,7 @@ class Permissions extends Controller
             session()->setFlashdata('success', 'Permissão removida com sucesso! Remova a configuração do arquivo Config/AuthGroups.php para tornar permanente.');
             session()->setFlashdata('permission_delete', $permissionName);
 
-            return redirect()->to('/admin/permissions');
+            return redirect()->to(base_url('admin/permissions'));
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Erro ao excluir permissão: ' . $e->getMessage());
@@ -204,7 +216,7 @@ class Permissions extends Controller
     {
         // Verificar se o usuário está logado
         if (!auth()->loggedIn()) {
-            return redirect()->to('/login');
+            return redirect()->to(url_to('login'));
         }
 
         // Obter configurações
@@ -237,7 +249,7 @@ class Permissions extends Controller
     {
         // Verificar se o usuário está logado
         if (!auth()->loggedIn()) {
-            return redirect()->to('/login');
+            return redirect()->to(url_to('login'));
         }
 
         try {
@@ -255,7 +267,7 @@ class Permissions extends Controller
             session()->setFlashdata('success', 'Matriz de permissões atualizada com sucesso! Atualize o arquivo Config/AuthGroups.php para tornar permanente.');
             session()->setFlashdata('matrix_update', $newMatrix);
 
-            return redirect()->to('/admin/permissions/matrix');
+            return redirect()->to(base_url('admin/permissions/matrix'));
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Erro ao atualizar matriz: ' . $e->getMessage());

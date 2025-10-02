@@ -5,22 +5,28 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-//$routes->get('/', 'Modules\Admin\Controllers\Admin::index');
 
+// Rota padrão (homepage)
+$routes->get('/', 'Home::index');
+
+// Grupo de rotas para autenticação (Shield)
 $routes->group('/', static function ($routes) {
-    // Rotas padrão do Shield (login, registro, reset etc.) se desejar usar as views do Shield
-    service('auth')->routes($routes); // habilita rotas padrão do Shield
+    // Rotas padrão do Shield (login, registro, reset etc.)
+    service('auth')->routes($routes);
 
-    // Carrega as rotas do módulo Auth (login/logout simples)
-    require_once ROOTPATH . 'modules/Auth/Config/Routes.php';
+    // Carrega as rotas do módulo Auth (login/logout personalizado)
+    if (file_exists(ROOTPATH . 'modules/Auth/Config/Routes.php')) {
+        require_once ROOTPATH . 'modules/Auth/Config/Routes.php';
+    }
 });
 
-$routes->group('admin', ['namespace' => 'Modules\Admin\Controllers'], static function ($routes) {
-    // Proteger admin com filtro 'session' do Shield
-    $routes->get('/', 'Admin::index', ['filter' => 'session']);
+// Grupo de rotas administrativas protegidas
+$routes->group('admin', ['namespace' => 'Modules\Admin\Controllers', 'filter' => 'session'], static function ($routes) {
+    // Dashboard administrativo
+    $routes->get('/', 'Admin::index');
     
     // Rotas de gerenciamento de usuários
-    $routes->group('users', ['filter' => 'session'], static function ($routes) {
+    $routes->group('users', static function ($routes) {
         $routes->get('/', 'Users::index');
         $routes->get('create', 'Users::create');
         $routes->post('store', 'Users::store');
@@ -31,7 +37,7 @@ $routes->group('admin', ['namespace' => 'Modules\Admin\Controllers'], static fun
     });
     
     // Rotas de gerenciamento de grupos
-    $routes->group('groups', ['filter' => 'session'], static function ($routes) {
+    $routes->group('groups', static function ($routes) {
         $routes->get('/', 'Groups::index');
         $routes->get('create', 'Groups::create');
         $routes->post('store', 'Groups::store');
@@ -42,7 +48,7 @@ $routes->group('admin', ['namespace' => 'Modules\Admin\Controllers'], static fun
     });
     
     // Rotas de gerenciamento de permissões
-    $routes->group('permissions', ['filter' => 'session'], static function ($routes) {
+    $routes->group('permissions', static function ($routes) {
         $routes->get('/', 'Permissions::index');
         $routes->get('create', 'Permissions::create');
         $routes->post('store', 'Permissions::store');
