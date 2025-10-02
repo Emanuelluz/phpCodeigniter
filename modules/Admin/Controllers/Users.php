@@ -93,6 +93,8 @@ class Users extends BaseController
     
     public function edit($id)
     {
+        helper(['form']);
+        
         $userProvider = auth()->getProvider();
         $user = $userProvider->withGroups()->findById($id);
         
