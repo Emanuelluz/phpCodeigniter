@@ -19,7 +19,12 @@
   <div class="card">
     <h1>Acessar</h1>
     <?php if(session()->getFlashdata('error')): ?>
-      <div class="error"><?= esc(session()->getFlashdata('error')) ?></div>
+      <div class="error" role="alert"><?= esc(session()->getFlashdata('error')) ?></div>
+    <?php endif; ?>
+    <?php if(session()->getFlashdata('success')): ?>
+      <div class="success" role="status" style="color:#0a7; font-size:12px; margin:8px 0;">
+        <?= esc(session()->getFlashdata('success')) ?>
+      </div>
     <?php endif; ?>
     <form method="post" action="/login">
       <div class="field">

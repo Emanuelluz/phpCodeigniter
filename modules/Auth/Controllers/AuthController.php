@@ -19,17 +19,20 @@ class AuthController extends BaseController
 
     public function doLogin(): RedirectResponse
     {
-        $credentials = [
-            'email'    => $this->request->getPost('email'),
-            'password' => $this->request->getPost('password'),
-        ];
+        $email = (string) $this->request->getPost('email');
+        $password = (string) $this->request->getPost('password');
 
-        $result = auth()->attempt($credentials);
-        if (! $result->isOK()) {
-            return redirect()->back()->with('error', $result->reason());
+        if ($email === '' || $password === '') {
+            return redirect()->back()->with('error', 'Informe e-mail e senha.');
         }
 
-        return redirect()->to('/');
+        $result = auth()->attempt(['email' => $email, 'password' => $password]);
+        if (! $result->isOK()) {
+            return redirect()->back()->with('error', $result->reason() ?? 'Falha na autenticação.');
+        }
+
+        // Redireciona ao admin por padrão após login
+        return redirect()->to('/admin');
     }
 
     public function logout(): RedirectResponse

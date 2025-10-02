@@ -15,25 +15,28 @@ class AdminUserSeeder extends Seeder
 
         $users = auth()->getProvider();
 
-        // Se já existir, não recria
-        if ($users->findByCredentials(['email' => $email])) {
-            return;
+        // Busca usuário existente ou cria um novo
+        $existing = $users->findByCredentials(['email' => $email]);
+        if ($existing) {
+            $user = $existing;
+        } else {
+            $user = new User([
+                'username' => $username,
+                'email'    => $email,
+                'password' => $password,
+            ]);
+            $users->save($user);
+            $user = $users->findByCredentials(['email' => $email]);
         }
 
-        $user = new User([
-            'username' => $username,
-            'email'    => $email,
-            'password' => $password,
-        ]);
-
-        $users->save($user);
-        $user = $users->findByCredentials(['email' => $email]);
-
-        // adiciona ao grupo padrão (se configurado) ou cria um grupo admin
+        // Garante associação do usuário admin ao grupo superadmin via serviço de autorização
         try {
-            $users->addToDefaultGroup($user);
+            $authz = service('authorization');
+            if (! $authz->inGroup('superadmin', $user->id)) {
+                $authz->addUserToGroup($user->id, 'superadmin');
+            }
         } catch (\Throwable $e) {
-            // ignore se não houver grupo default
+            log_message('warning', 'Falha ao garantir grupo superadmin ao admin: ' . $e->getMessage());
         }
     }
 }
