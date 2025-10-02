@@ -27,6 +27,7 @@
       </div>
     <?php endif; ?>
     <form method="post" action="/login">
+      <?= csrf_field() ?>
       <div class="field">
         <label for="email">E-mail</label>
         <input type="email" id="email" name="email" required />

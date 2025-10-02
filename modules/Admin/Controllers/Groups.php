@@ -2,12 +2,22 @@
 
 namespace Modules\Admin\Controllers;
 
-use CodeIgniter\Controller;
+use App\Controllers\BaseController;
 use CodeIgniter\Shield\Authorization\AuthorizationException;
+use CodeIgniter\HTTP\RequestInterface;
+use CodeIgniter\HTTP\ResponseInterface;
+use Psr\Log\LoggerInterface;
 
-class Groups extends Controller
+class Groups extends BaseController
 {
-    protected $helpers = ['form', 'url'];
+    public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
+    {
+        // Do Not Edit This Line
+        parent::initController($request, $response, $logger);
+        
+        // Carregar helpers necessários
+        helper(['form', 'url']);
+    }
 
     public function index()
     {
@@ -99,7 +109,8 @@ class Groups extends Controller
     $permissions = (array) $this->request->getPost('permissions');
 
         // Verificar se o grupo já existe
-        $currentGroups = setting('AuthGroups.groups', []);
+        $authGroupsConfig = config('AuthGroups');
+        $currentGroups = $authGroupsConfig->groups ?? [];
         if (isset($currentGroups[$name])) {
             return redirect()->back()
                 ->withInput()
@@ -114,7 +125,7 @@ class Groups extends Controller
             ];
 
             // Atualizar matriz de permissões
-            $currentMatrix = setting('AuthGroups.matrix', []);
+            $currentMatrix = $authGroupsConfig->matrix ?? [];
             $currentMatrix[$name] = $permissions;
 
             // Salvar configurações (simulado - em produção usaria um sistema de configuração dinâmica)
@@ -143,8 +154,10 @@ class Groups extends Controller
             return redirect()->to(url_to('login'));
         }
 
-        // Verificar se o grupo existe
-        $authGroups = setting('AuthGroups.groups', []);
+        // Obter grupos diretamente da configuração
+        $authGroupsConfig = config('AuthGroups');
+        $authGroups = $authGroupsConfig->groups ?? [];
+        
         if (!isset($authGroups[$groupName])) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
@@ -152,12 +165,12 @@ class Groups extends Controller
         $group = $authGroups[$groupName];
         $group['name'] = $groupName;
 
-        // Obter permissões do grupo
-        $authMatrix = setting('AuthGroups.matrix', []);
+        // Obter permissões do grupo diretamente da configuração
+        $authMatrix = $authGroupsConfig->matrix ?? [];
         $groupPermissions = $authMatrix[$groupName] ?? [];
 
-        // Obter todas as permissões disponíveis
-        $allPermissions = setting('AuthGroups.permissions', []);
+        // Obter todas as permissões disponíveis diretamente da configuração
+        $allPermissions = $authGroupsConfig->permissions ?? [];
 
         return view('Modules\\Admin\\Views\\groups\\edit', [
             'group' => $group,
@@ -174,7 +187,8 @@ class Groups extends Controller
         }
 
         // Verificar se o grupo existe
-        $authGroups = setting('AuthGroups.groups', []);
+        $authGroupsConfig = config('AuthGroups');
+        $authGroups = $authGroupsConfig->groups ?? [];
         if (!isset($authGroups[$groupName])) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
@@ -196,18 +210,11 @@ class Groups extends Controller
     $permissions = (array) $this->request->getPost('permissions');
 
         try {
-            // Atualizar grupo (simulado)
-            session()->setFlashdata('success', 'Grupo atualizado com sucesso! Atualize o arquivo Config/AuthGroups.php para tornar permanente.');
-            session()->setFlashdata('group_update', [
-                'name' => $groupName,
-                'config' => [
-                    'title' => $title,
-                    'description' => $description
-                ],
-                'permissions' => $permissions
-            ]);
-
-            return redirect()->to(base_url('admin/groups'));
+            // Atualizar arquivo de configuração permanentemente
+            $this->updateAuthGroupsConfig($groupName, $title, $description, $permissions);
+            
+            return redirect()->to(base_url('admin/groups'))
+                ->with('success', 'Grupo atualizado com sucesso!');
 
         } catch (\Exception $e) {
             return redirect()->back()
@@ -224,7 +231,8 @@ class Groups extends Controller
         }
 
         // Verificar se o grupo existe
-        $authGroups = setting('AuthGroups.groups', []);
+        $authGroupsConfig = config('AuthGroups');
+        $authGroups = $authGroupsConfig->groups ?? [];
         if (!isset($authGroups[$groupName])) {
             return redirect()->back()->with('error', 'Grupo não encontrado.');
         }
@@ -237,11 +245,11 @@ class Groups extends Controller
         }
 
         try {
-            // Remover grupo (simulado)
-            session()->setFlashdata('success', 'Grupo removido com sucesso! Remova a configuração do arquivo Config/AuthGroups.php para tornar permanente.');
-            session()->setFlashdata('group_delete', $groupName);
-
-            return redirect()->to(base_url('admin/groups'));
+            // Remover grupo permanentemente do arquivo de configuração
+            $this->deleteGroupFromConfig($groupName);
+            
+            return redirect()->to(base_url('admin/groups'))
+                ->with('success', "Grupo '{$groupName}' excluído com sucesso!");
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Erro ao excluir grupo: ' . $e->getMessage());
@@ -255,8 +263,10 @@ class Groups extends Controller
             return redirect()->to(url_to('login'));
         }
 
-        // Verificar se o grupo existe
-        $authGroups = setting('AuthGroups.groups', []);
+        // Obter grupos diretamente da configuração
+        $authGroupsConfig = config('AuthGroups');
+        $authGroups = $authGroupsConfig->groups ?? [];
+        
         if (!isset($authGroups[$groupName])) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
@@ -305,5 +315,125 @@ class Groups extends Controller
         $users = $userProvider->withIdentities()->withGroups()->whereIn('id', $userIds)->findAll();
         
         return $users;
+    }
+
+    /**
+     * Atualizar o arquivo Config/AuthGroups.php permanentemente
+     */
+    private function updateAuthGroupsConfig($groupName, $title, $description, $permissions)
+    {
+        $configPath = APPPATH . 'Config/AuthGroups.php';
+        
+        if (!is_writable($configPath)) {
+            throw new \Exception('Arquivo Config/AuthGroups.php não tem permissão de escrita');
+        }
+
+        // Ler o arquivo atual
+        $content = file_get_contents($configPath);
+        if ($content === false) {
+            throw new \Exception('Não foi possível ler o arquivo Config/AuthGroups.php');
+        }
+
+        // Escapar caracteres especiais
+        $escapedTitle = addslashes($title);
+        $escapedDescription = addslashes($description);
+
+        // Padrão mais flexível para capturar o grupo completo
+        $pattern = "/'{$groupName}'\s*=>\s*\[\s*'title'\s*=>\s*'[^']*',\s*'description'\s*=>\s*'[^']*',?\s*\]/s";
+        $replacement = "'{$groupName}' => [\n            'title'       => '{$escapedTitle}',\n            'description' => '{$escapedDescription}',\n        ]";
+        
+        // Tentar diferentes padrões se o primeiro não funcionar
+        $patterns = [
+            "/'{$groupName}'\s*=>\s*\[\s*'title'\s*=>\s*'[^']*',\s*'description'\s*=>\s*'[^']*',?\s*\]/s",
+            "/'{$groupName}'\s*=>\s*\[[^\]]*\]/s",
+            "/'{$groupName}'\s*=>\s*\[\s*'title'\s*=>[^,]+,\s*'description'\s*=>[^,\]]+[,\s]*\]/s"
+        ];
+        
+        $updated = null;
+        foreach ($patterns as $pattern) {
+            $updated = preg_replace($pattern, $replacement, $content);
+            if ($updated !== null && $updated !== $content) {
+                break; // Sucesso com este padrão
+            }
+        }
+        
+        if ($updated === null || $updated === $content) {
+            // Log do conteúdo para debug
+            log_message('error', "Grupo {$groupName} não encontrado. Conteúdo do arquivo em torno do grupo:");
+            $lines = explode("\n", $content);
+            foreach ($lines as $i => $line) {
+                if (strpos($line, $groupName) !== false) {
+                    $start = max(0, $i - 2);
+                    $end = min(count($lines) - 1, $i + 2);
+                    for ($j = $start; $j <= $end; $j++) {
+                        log_message('error', "Linha " . ($j + 1) . ": " . $lines[$j]);
+                    }
+                    break;
+                }
+            }
+            throw new \Exception("Grupo '{$groupName}' não encontrado ou formato não reconhecido no arquivo Config/AuthGroups.php");
+        }
+
+        // Salvar o arquivo
+        if (file_put_contents($configPath, $updated) === false) {
+            throw new \Exception('Não foi possível salvar o arquivo Config/AuthGroups.php');
+        }
+        
+        // Limpar cache de configuração se existir
+        if (function_exists('opcache_invalidate')) {
+            opcache_invalidate($configPath);
+        }
+    }
+
+    /**
+     * Excluir grupo permanentemente do arquivo Config/AuthGroups.php
+     */
+    private function deleteGroupFromConfig($groupName)
+    {
+        $configPath = APPPATH . 'Config/AuthGroups.php';
+        
+        if (!is_writable($configPath)) {
+            throw new \Exception('Arquivo Config/AuthGroups.php não tem permissão de escrita');
+        }
+
+        // Ler o arquivo atual
+        $content = file_get_contents($configPath);
+        if ($content === false) {
+            throw new \Exception('Não foi possível ler o arquivo Config/AuthGroups.php');
+        }
+
+        // Padrão mais preciso para remover o grupo e manter formatação
+        $pattern = "/,?\s*'{$groupName}'\s*=>\s*\[\s*'title'\s*=>\s*'[^']*',\s*'description'\s*=>\s*'[^']*',?\s*\],?/s";
+        
+        $updated = preg_replace($pattern, '', $content);
+        
+        if ($updated === null || $updated === $content) {
+            // Tentar padrão alternativo
+            $pattern = "/'{$groupName}'\s*=>\s*\[[^\]]*\],?\s*/s";
+            $updated = preg_replace($pattern, '', $content);
+        }
+        
+        if ($updated === null || $updated === $content) {
+            throw new \Exception("Grupo '{$groupName}' não encontrado no arquivo Config/AuthGroups.php");
+        }
+
+        // Remover também da matriz de permissões se existir
+        $matrixPattern = "/'{$groupName}'\s*=>\s*\[[^\]]*\],?\s*/s";
+        $updated = preg_replace($matrixPattern, '', $updated);
+
+        // Limpar formatação: vírgulas duplas, espaços extras
+        $updated = preg_replace('/,\s*,/', ',', $updated);
+        $updated = preg_replace('/\],\s*\n\s*\'/', "],\n        '", $updated);
+        $updated = preg_replace('/\]\s*,\s*\'/', "],\n        '", $updated);
+        
+        // Salvar o arquivo
+        if (file_put_contents($configPath, $updated) === false) {
+            throw new \Exception('Não foi possível salvar o arquivo Config/AuthGroups.php');
+        }
+        
+        // Limpar cache de configuração se existir
+        if (function_exists('opcache_invalidate')) {
+            opcache_invalidate($configPath);
+        }
     }
 }

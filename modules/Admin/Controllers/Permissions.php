@@ -106,7 +106,8 @@ class Permissions extends Controller
         }
 
         // Verificar se a permissão existe
-        $permissions = setting('AuthGroups.permissions', []);
+        $authGroupsConfig = config('AuthGroups');
+        $permissions = $authGroupsConfig->permissions ?? [];
         if (!isset($permissions[$permissionName])) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
@@ -129,7 +130,8 @@ class Permissions extends Controller
         }
 
         // Verificar se a permissão existe
-        $permissions = setting('AuthGroups.permissions', []);
+        $authGroupsConfig = config('AuthGroups');
+        $permissions = $authGroupsConfig->permissions ?? [];
         if (!isset($permissions[$permissionName])) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
@@ -148,14 +150,11 @@ class Permissions extends Controller
         $description = $this->request->getPost('description');
 
         try {
-            // Atualizar permissão (simulado)
-            session()->setFlashdata('success', 'Permissão atualizada com sucesso! Atualize o arquivo Config/AuthGroups.php para tornar permanente.');
-            session()->setFlashdata('permission_update', [
-                'name' => $permissionName,
-                'description' => $description
-            ]);
-
-            return redirect()->to(base_url('admin/permissions'));
+            // Atualizar permissão permanentemente
+            $this->updatePermissionConfig($permissionName, $description);
+            
+            return redirect()->to(base_url('admin/permissions'))
+                ->with('success', 'Permissão atualizada com sucesso!');
 
         } catch (\Exception $e) {
             return redirect()->back()
@@ -262,6 +261,48 @@ class Permissions extends Controller
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Erro ao atualizar matriz: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Atualizar o arquivo Config/AuthGroups.php permanentemente para permissões
+     */
+    private function updatePermissionConfig($permissionName, $description)
+    {
+        $configPath = APPPATH . 'Config/AuthGroups.php';
+        
+        if (!is_writable($configPath)) {
+            throw new \Exception('Arquivo Config/AuthGroups.php não tem permissão de escrita');
+        }
+
+        // Ler o arquivo atual
+        $content = file_get_contents($configPath);
+        if ($content === false) {
+            throw new \Exception('Não foi possível ler o arquivo Config/AuthGroups.php');
+        }
+
+        // Escapar caracteres especiais na descrição
+        $escapedDescription = addslashes($description);
+        
+        // Buscar pela permissão específica e atualizar sua descrição
+        $pattern = "/'{$permissionName}'\s*=>\s*'[^']*'/";
+        $replacement = "'{$permissionName}' => '{$escapedDescription}'";
+        
+        $updated = preg_replace($pattern, $replacement, $content);
+        
+        if ($updated === null || $updated === $content) {
+            log_message('warning', "Não foi possível atualizar a permissão {$permissionName} automaticamente");
+            throw new \Exception("Permissão não encontrada ou formato do arquivo não é compatível");
+        }
+
+        // Salvar o arquivo
+        if (file_put_contents($configPath, $updated) === false) {
+            throw new \Exception('Não foi possível salvar o arquivo Config/AuthGroups.php');
+        }
+        
+        // Limpar cache de configuração se existir
+        if (function_exists('opcache_invalidate')) {
+            opcache_invalidate($configPath);
         }
     }
 }

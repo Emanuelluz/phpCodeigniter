@@ -17,16 +17,19 @@ $routes->get('/test/tables', 'Test::tables');
 $routes->get('/test/seed-groups', 'Test::seedGroups');
 $routes->get('/test/debug-auth', 'Test::debugAuth');
 $routes->get('/test/activate-admin', 'Test::activateAdmin');
+$routes->get('/test/login-admin', 'Test::loginAdmin');
+$routes->get('/test/debug-user', 'DebugUser::index');
+$routes->get('/test/cookie-test', 'CookieTest::index');
 
 // Grupo de rotas para autenticação (Shield)
 $routes->group('/', static function ($routes) {
-    // Rotas padrão do Shield (login, registro, reset etc.)
-    service('auth')->routes($routes);
-
-    // Carrega as rotas do módulo Auth (login/logout personalizado)
+    // Carrega as rotas do módulo Auth (login/logout personalizado) ANTES das rotas do Shield
     if (file_exists(ROOTPATH . 'modules/Auth/Config/Routes.php')) {
         require_once ROOTPATH . 'modules/Auth/Config/Routes.php';
     }
+    
+    // Rotas padrão do Shield (registro, reset etc.) - login já foi sobrescrito
+    service('auth')->routes($routes);
 });
 
 // Grupo de rotas administrativas protegidas

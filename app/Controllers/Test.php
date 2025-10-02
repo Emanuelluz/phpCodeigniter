@@ -219,4 +219,39 @@ class Test extends Controller
             ]);
         }
     }
+
+    public function loginAdmin()
+    {
+        try {
+            $auth = service('auth');
+            
+            // Tentar fazer login programaticamente
+            $result = $auth->attempt([
+                'email' => 'admin@example.com',
+                'password' => 'admin123'
+            ]);
+            
+            $debug_info = [
+                'login_attempt' => $result->isOK(),
+                'reason' => $result->reason(),
+                'is_logged_in_after' => $auth->loggedIn(),
+                'user_after' => $auth->user() ? [
+                    'id' => $auth->user()->id,
+                    'username' => $auth->user()->username,
+                    'active' => $auth->user()->active
+                ] : null,
+                'session_id' => session_id(),
+                'session_data' => session()->get()
+            ];
+            
+            return json_encode($debug_info, JSON_PRETTY_PRINT);
+            
+        } catch (\Exception $e) {
+            return json_encode([
+                'status' => 'error',
+                'message' => 'Erro no login admin teste',
+                'error' => $e->getMessage()
+            ], JSON_PRETTY_PRINT);
+        }
+    }
 }

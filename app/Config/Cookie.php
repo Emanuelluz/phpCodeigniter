@@ -45,7 +45,7 @@ class Cookie extends BaseConfig
      *
      * Set to `.your-domain.com` for site-wide cookies.
      */
-    public string $domain = 'pppr.ecl.dev.br';
+    public string $domain = '';
 
     /**
      * --------------------------------------------------------------------------
@@ -54,7 +54,7 @@ class Cookie extends BaseConfig
      *
      * Cookie will only be set if a secure HTTPS connection exists.
      */
-    public bool $secure = true;
+    public bool $secure = false;
 
     /**
      * --------------------------------------------------------------------------

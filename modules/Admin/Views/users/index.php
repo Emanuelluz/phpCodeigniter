@@ -47,9 +47,6 @@
                         <a class="nav-link" href="<?= base_url('admin') ?>">
                             <i class="bi bi-speedometer2 me-2"></i>
                             Dashboard
-                        <a class="nav-link" href="<?= base_url('admin') ?>">
-                            <i class="bi bi-speedometer2 me-2"></i>
-                            Dashboard
                         </a>
                         <a class="nav-link active" href="<?= base_url('admin/users') ?>">
                             <i class="bi bi-people me-2"></i>

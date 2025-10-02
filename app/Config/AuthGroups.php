@@ -41,11 +41,11 @@ class AuthGroups extends ShieldAuthGroups
     public array $groups = [
         'superadmin' => [
             'title'       => 'Super Admin',
-            'description' => 'Complete control of the site.',
+            'description' => 'Controle completo sobre o sistema',
         ],
         'admin' => [
-            'title'       => 'Admin',
-            'description' => 'Day to day administrators of the site.',
+            'title'       => 'Admin Atualizado',
+            'description' => 'Administradores do sistema - versao atualizada',
         ],
         'developer' => [
             'title'       => 'Developer',
@@ -55,17 +55,13 @@ class AuthGroups extends ShieldAuthGroups
             'title'       => 'Manager',
             'description' => 'Site managers.',
         ],
-        'editor' => [
-            'title'       => 'Editor',
-            'description' => 'Content editors.',
-        ],
         'user' => [
-            'title'       => 'User',
-            'description' => 'General users of the site. Often customers.',
+            'title'       => 'Usuario Final',
+            'description' => 'Usuarios finais do sistema - acesso limitado',
         ],
         'beta' => [
-            'title'       => 'Beta User',
-            'description' => 'Has access to beta features.',
+            'title'       => 'Beta Tester',
+            'description' => 'Usuarios com acesso a funcionalidades beta do sistema',
         ],
     ];
 
@@ -78,21 +74,21 @@ class AuthGroups extends ShieldAuthGroups
      * If a permission is not listed here it cannot be used.
      */
     public array $permissions = [
-        'admin.access'        => 'Can access the sites admin area',
-        'admin.settings'      => 'Can change the sites settings',
-        'users.manage-admins' => 'Can manage other admins',
-        'users.create'        => 'Can create new non-admin users',
-        'users.edit'          => 'Can edit existing non-admin users',
-        'users.delete'        => 'Can delete existing non-admin users',
-        'users.view'          => 'Can view users',
-        'groups.create'       => 'Can create new groups',
-        'groups.edit'         => 'Can edit existing groups',
-        'groups.delete'       => 'Can delete existing groups',
-        'groups.view'         => 'Can view groups',
-        'permissions.create'  => 'Can create new permissions',
-        'permissions.edit'    => 'Can edit existing permissions',
-        'permissions.delete'  => 'Can delete existing permissions',
-        'permissions.view'    => 'Can view permissions',
+        'admin.access' => 'Acesso completo à área administrativa do sistema',
+        'admin.settings' => 'Pode alterar as configurações do sistema',
+        'users.manage-admins' => 'Pode gerenciar outros administradores',
+        'users.create' => 'Pode criar novos usuários não administradores',
+        'users.edit' => 'Pode editar usuários não administradores existentes',
+        'users.delete' => 'Pode excluir usuários não administradores existentes',
+        'users.view' => 'Pode visualizar usuários',
+        'groups.create' => 'Pode criar novos grupos',
+        'groups.edit' => 'Pode editar grupos existente',
+        'groups.delete' => 'Pode excluir grupos existente',
+        'groups.view' => 'Pode visualizar grupos ',
+        'permissions.create' => 'Pode criar novas permissões',
+        'permissions.edit' => 'Pode editar permissões existente',
+        'permissions.delete' => 'Pode deletar permissões existente',
+        'permissions.view' => 'Pode visualizar pemissões',
         'posts.create'        => 'Can create new posts',
         'posts.edit'          => 'Can edit existing posts',
         'posts.delete'        => 'Can delete existing posts',
@@ -110,12 +106,8 @@ class AuthGroups extends ShieldAuthGroups
      */
     public array $matrix = [
         'superadmin' => [
-            'admin.*',
-            'users.*',
-            'groups.*',
-            'permissions.*',
-            'posts.*',
-            'beta.*',
+            'title'       => 'Super Admin',
+            'description' => 'Controle completo sobre o sistema',
         ],
         'admin' => [
             'admin.access',
@@ -145,13 +137,7 @@ class AuthGroups extends ShieldAuthGroups
             'users.view',
             'groups.view',
             'posts.*',
-        ],
-        'editor' => [
-            'posts.create',
-            'posts.edit',
-            'posts.view',
-        ],
-        'user' => [],
+        ],'user' => [],
         'beta' => [
             'beta.access',
         ],
