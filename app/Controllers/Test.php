@@ -187,4 +187,36 @@ class Test extends Controller
             ]);
         }
     }
+    
+    public function activateAdmin()
+    {
+        try {
+            $db = \Config\Database::connect();
+            
+            // Ativar usuário admin (ID 1)
+            $result = $db->table('users')
+                ->where('id', 1)
+                ->update(['active' => 1]);
+            
+            if ($result) {
+                return json_encode([
+                    'status' => 'success',
+                    'message' => 'Usuário admin ativado com sucesso!',
+                    'affected_rows' => $result
+                ]);
+            } else {
+                return json_encode([
+                    'status' => 'error',
+                    'message' => 'Não foi possível ativar o usuário admin'
+                ]);
+            }
+            
+        } catch (\Exception $e) {
+            return json_encode([
+                'status' => 'error',
+                'message' => 'Erro ao ativar admin',
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
 }
