@@ -50,6 +50,17 @@ jobs:
           fi
           echo "Networks snapshot:" && docker network ls | grep -E "labnet|phpcodeigniter|INGRESS|ingress" || true
 
+      - name: Ensure internal overlay network exists (externalized)
+        shell: bash
+        run: |
+          if ! docker network inspect phpcodeigniter_internal_net >/dev/null 2>&1; then
+            echo "Creating overlay network: phpcodeigniter_internal_net"
+            docker network create -d overlay --attachable phpcodeigniter_internal_net
+          else
+            echo "Overlay network 'phpcodeigniter_internal_net' already exists"
+          fi
+          echo "Networks snapshot:" && docker network ls | grep -E "phpcodeigniter_internal_net|labnet|INGRESS|ingress" || true
+
       - name: Stop and remove existing stack (zero-downtime not required)
         shell: bash
         run: |
@@ -62,10 +73,10 @@ jobs:
               echo "Waiting stack removal... $i"; sleep 2
             done
             # Aguarda remoção completa das redes do stack
-            echo "Waiting for network cleanup..."
+            echo "Waiting for stack-scoped networks cleanup (excluding external phpcodeigniter_internal_net)..."
             for i in {1..30}; do
-              if ! docker network ls | grep -q "phpcodeigniter_internal_net"; then
-                echo "Network cleanup complete"; break
+              if ! docker network ls | grep -E "^\w+\s+phpcodeigniter_" | grep -v "phpcodeigniter_internal_net" >/dev/null; then
+                echo "Stack-scoped networks cleanup complete"; break
               fi
               echo "Waiting network cleanup... $i"; sleep 2
             done
@@ -80,14 +91,18 @@ jobs:
           # Remove redes órfãs do phpcodeigniter se existirem
           docker network ls --filter "name=phpcodeigniter" --format "{{.Name}}" | while read network; do
             if [ ! -z "$network" ]; then
+              if [ "$network" = "phpcodeigniter_internal_net" ]; then
+                echo "Skipping external network: $network"
+                continue
+              fi
               echo "Removing orphaned network: $network"
               docker network rm "$network" 2>/dev/null || echo "Network $network already removed or in use"
             fi
           done
           
-          # Force cleanup de recursos órfãos do sistema
-          echo "Running system cleanup..."
-          docker system prune -f --filter "label=com.docker.stack.namespace=phpcodeigniter" || true
+          # Evitar prune de redes externas; apenas imagens dangling
+          echo "Pruning dangling images only..."
+          docker image prune -f || true
           
           # Aguardar um pouco para estabilizar
           echo "Waiting for system stabilization..."
@@ -102,7 +117,17 @@ jobs:
           echo "Deploying stack..."
           # Listar redes antes do deploy para debug
           echo "Networks before deploy:"
-          docker network ls | grep -E "phpcodeigniter|labnet|NAME" || true
+          docker network ls | grep -E "phpcodeigniter_internal_net|labnet|NAME" || true
+          
+          # Re-ensure redes externas necessárias
+          if ! docker network inspect phpcodeigniter_internal_net >/dev/null 2>&1; then
+            echo "Recreating overlay network: phpcodeigniter_internal_net"
+            docker network create -d overlay --attachable phpcodeigniter_internal_net
+          fi
+          if ! docker network inspect labnet >/dev/null 2>&1; then
+            echo "Recreating overlay network: labnet"
+            docker network create -d overlay --attachable labnet
+          fi
           
           # Deploy do stack
           docker stack deploy -c docker-compose.yml phpcodeigniter --with-registry-auth

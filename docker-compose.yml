@@ -69,5 +69,7 @@ networks:
     external: true   # rede já criada para Traefik
     name: labnet
   internal_net:
-    driver: overlay
-    attachable: true
+    # Tornamos a rede interna externa/gerenciada fora do stack para evitar
+    # conflitos de criação ("network already exists") em deploys.
+    external: true
+    name: phpcodeigniter_internal_net
