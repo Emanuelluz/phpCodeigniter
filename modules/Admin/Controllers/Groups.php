@@ -26,6 +26,11 @@ class Groups extends BaseController
             return redirect()->to(url_to('login'));
         }
 
+        // Limpar cache da configuração para garantir dados atualizados
+        if (function_exists('opcache_reset')) {
+            opcache_reset();
+        }
+
         // Obter todos os grupos configurados - com fallback para array vazio
         $authGroupsConfig = config('AuthGroups');
         $authGroups = $authGroupsConfig->groups ?? [];
@@ -118,26 +123,10 @@ class Groups extends BaseController
         }
 
         try {
-            // Adicionar novo grupo
-            $currentGroups[$name] = [
-                'title' => $title,
-                'description' => $description
-            ];
-
-            // Atualizar matriz de permissões
-            $currentMatrix = $authGroupsConfig->matrix ?? [];
-            $currentMatrix[$name] = $permissions;
-
-            // Salvar configurações (simulado - em produção usaria um sistema de configuração dinâmica)
-            // Por enquanto, mostramos instruções para adicionar manualmente
+            // Adicionar grupo ao arquivo AuthGroups.php
+            $this->addGroupToConfig($name, $title, $description, $permissions);
             
-            session()->setFlashdata('success', 'Grupo criado com sucesso! Adicione a configuração ao arquivo Config/AuthGroups.php para tornar permanente.');
-            session()->setFlashdata('group_config', [
-                'name' => $name,
-                'config' => $currentGroups[$name],
-                'permissions' => $permissions
-            ]);
-
+            session()->setFlashdata('success', 'Grupo criado com sucesso!');
             return redirect()->to(base_url('admin/groups'));
 
         } catch (\Exception $e) {
@@ -315,6 +304,88 @@ class Groups extends BaseController
         $users = $userProvider->withIdentities()->withGroups()->whereIn('id', $userIds)->findAll();
         
         return $users;
+    }
+
+    /**
+     * Adicionar novo grupo ao arquivo Config/AuthGroups.php permanentemente
+     */
+    private function addGroupToConfig($groupName, $title, $description, $permissions)
+    {
+        $configPath = APPPATH . 'Config/AuthGroups.php';
+        
+        if (!is_writable($configPath)) {
+            throw new \Exception('Arquivo Config/AuthGroups.php não tem permissão de escrita');
+        }
+
+        // Ler o arquivo atual
+        $content = file_get_contents($configPath);
+        if ($content === false) {
+            throw new \Exception('Não foi possível ler o arquivo Config/AuthGroups.php');
+        }
+
+        // Verificar se o grupo já existe
+        if (strpos($content, "'{$groupName}' =>") !== false) {
+            throw new \Exception('Grupo já existe no arquivo de configuração');
+        }
+
+        // Procurar o final da array $groups - ser mais específico
+        $groupsStart = strpos($content, 'public array $groups = [');
+        if ($groupsStart === false) {
+            throw new \Exception('Não foi possível encontrar public array $groups');
+        }
+        
+        // Encontrar o próximo ]; após a declaração de $groups
+        $searchStart = $groupsStart + strlen('public array $groups = [');
+        $nextArrayStart = strpos($content, 'public array $', $searchStart);
+        
+        if ($nextArrayStart !== false) {
+            // Procurar ]; antes da próxima array
+            $groupsEnd = strrpos(substr($content, 0, $nextArrayStart), '];');
+        } else {
+            // Se não há próxima array, procurar o último ];
+            $groupsEnd = strrpos($content, '];');
+        }
+        
+        if ($groupsEnd === false) {
+            throw new \Exception('Não foi possível encontrar o final da array $groups');
+        }
+
+        // Preparar o novo grupo
+        $newGroup = "        '{$groupName}' => [\n";
+        $newGroup .= "            'title'       => '{$title}',\n";
+        $newGroup .= "            'description' => '{$description}',\n";
+        $newGroup .= "        ],\n";
+
+        // Inserir o novo grupo antes do final da array
+        $beforeGroups = substr($content, 0, $groupsEnd);
+        $afterGroups = substr($content, $groupsEnd);
+        $content = $beforeGroups . $newGroup . $afterGroups;
+
+        // Adicionar permissões à matriz se especificadas
+        if (!empty($permissions)) {
+            $matrixStart = strpos($content, 'public array $matrix = [');
+            if ($matrixStart !== false) {
+                $matrixEnd = strrpos($content, '];', $matrixStart);
+                if ($matrixEnd !== false) {
+                    $permissionsList = implode("',\n            '", $permissions);
+                    $newMatrix = "        '{$groupName}' => [\n            '{$permissionsList}',\n        ],\n";
+                    
+                    $beforeMatrix = substr($content, 0, $matrixEnd);
+                    $afterMatrix = substr($content, $matrixEnd);
+                    $content = $beforeMatrix . $newMatrix . $afterMatrix;
+                }
+            }
+        }
+
+        // Salvar o arquivo
+        if (file_put_contents($configPath, $content) === false) {
+            throw new \Exception('Não foi possível salvar o arquivo Config/AuthGroups.php');
+        }
+
+        // Limpar cache do OPcache se estiver ativo
+        if (function_exists('opcache_invalidate')) {
+            opcache_invalidate($configPath);
+        }
     }
 
     /**

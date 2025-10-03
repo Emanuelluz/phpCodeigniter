@@ -60,7 +60,7 @@ class Permissions extends Controller
 
         // Validação
         $rules = [
-            'name' => 'required|min_length[2]|max_length[50]|alpha_dash',
+            'name' => 'required|min_length[2]|max_length[50]|regex_match[/^[a-zA-Z0-9._-]+$/]',
             'description' => 'required|min_length[2]|max_length[255]'
         ];
 
@@ -82,13 +82,10 @@ class Permissions extends Controller
         }
 
         try {
-            // Adicionar nova permissão (simulado)
-            session()->setFlashdata('success', 'Permissão criada com sucesso! Adicione a configuração ao arquivo Config/AuthGroups.php para tornar permanente.');
-            session()->setFlashdata('permission_config', [
-                'name' => $name,
-                'description' => $description
-            ]);
-
+            // Adicionar permissão ao arquivo AuthGroups.php
+            $this->addPermissionToConfig($name, $description);
+            
+            session()->setFlashdata('success', 'Permissão criada com sucesso!');
             return redirect()->to(base_url('admin/permissions'));
 
         } catch (\Exception $e) {
@@ -171,13 +168,14 @@ class Permissions extends Controller
         }
 
         // Verificar se a permissão existe
-        $permissions = setting('AuthGroups.permissions', []);
+        $authGroupsConfig = config('AuthGroups');
+        $permissions = $authGroupsConfig->permissions ?? [];
         if (!isset($permissions[$permissionName])) {
             return redirect()->back()->with('error', 'Permissão não encontrada.');
         }
 
         // Verificar se a permissão está sendo usada por algum grupo
-        $authMatrix = setting('AuthGroups.matrix', []);
+        $authMatrix = $authGroupsConfig->matrix ?? [];
         $groupsUsing = [];
         
         foreach ($authMatrix as $groupName => $groupPermissions) {
@@ -191,10 +189,10 @@ class Permissions extends Controller
         }
 
         try {
-            // Remover permissão (simulado)
-            session()->setFlashdata('success', 'Permissão removida com sucesso! Remova a configuração do arquivo Config/AuthGroups.php para tornar permanente.');
-            session()->setFlashdata('permission_delete', $permissionName);
-
+            // Remover permissão do arquivo AuthGroups.php
+            $this->deletePermissionFromConfig($permissionName);
+            
+            session()->setFlashdata('success', 'Permissão removida com sucesso!');
             return redirect()->to(base_url('admin/permissions'));
 
         } catch (\Exception $e) {
@@ -265,6 +263,69 @@ class Permissions extends Controller
     }
 
     /**
+     * Adicionar nova permissão ao arquivo Config/AuthGroups.php permanentemente
+     */
+    private function addPermissionToConfig($permissionName, $description)
+    {
+        $configPath = APPPATH . 'Config/AuthGroups.php';
+        
+        if (!is_writable($configPath)) {
+            throw new \Exception('Arquivo Config/AuthGroups.php não tem permissão de escrita');
+        }
+
+        // Ler o arquivo atual
+        $content = file_get_contents($configPath);
+        if ($content === false) {
+            throw new \Exception('Não foi possível ler o arquivo Config/AuthGroups.php');
+        }
+
+        // Verificar se a permissão já existe
+        if (strpos($content, "'{$permissionName}' =>") !== false) {
+            throw new \Exception('Permissão já existe no arquivo de configuração');
+        }
+
+        // Procurar o final da array $permissions
+        $permissionsStart = strpos($content, 'public array $permissions = [');
+        if ($permissionsStart === false) {
+            throw new \Exception('Não foi possível encontrar public array $permissions');
+        }
+        
+        // Encontrar o próximo ]; após a declaração de $permissions
+        $searchStart = $permissionsStart + strlen('public array $permissions = [');
+        $nextArrayStart = strpos($content, 'public array $', $searchStart);
+        
+        if ($nextArrayStart !== false) {
+            // Procurar ]; antes da próxima array
+            $permissionsEnd = strrpos(substr($content, 0, $nextArrayStart), '];');
+        } else {
+            // Se não há próxima array, procurar o ]; da seção de permissões
+            $permissionsEnd = strpos($content, '];', $searchStart);
+        }
+        
+        if ($permissionsEnd === false) {
+            throw new \Exception('Não foi possível encontrar o final da array $permissions');
+        }
+
+        // Preparar a nova permissão
+        $newPermission = "        '{$permissionName}' => '{$description}',\n";
+
+        // Inserir a nova permissão antes do final da array
+        $beforePermissions = substr($content, 0, $permissionsEnd);
+        $afterPermissions = substr($content, $permissionsEnd);
+        $content = $beforePermissions . $newPermission . $afterPermissions;
+
+        // Salvar o arquivo
+        if (file_put_contents($configPath, $content) === false) {
+            throw new \Exception('Não foi possível salvar o arquivo Config/AuthGroups.php');
+        }
+
+        // Limpar cache do OPcache se estiver ativo
+        if (function_exists('opcache_invalidate')) {
+            opcache_invalidate($configPath);
+        }
+    }
+
+    /**
      * Atualizar o arquivo Config/AuthGroups.php permanentemente para permissões
      */
     private function updatePermissionConfig($permissionName, $description)
@@ -301,6 +362,46 @@ class Permissions extends Controller
         }
         
         // Limpar cache de configuração se existir
+        if (function_exists('opcache_invalidate')) {
+            opcache_invalidate($configPath);
+        }
+    }
+
+    /**
+     * Remover permissão do arquivo Config/AuthGroups.php permanentemente
+     */
+    private function deletePermissionFromConfig($permissionName)
+    {
+        $configPath = APPPATH . 'Config/AuthGroups.php';
+        
+        if (!is_writable($configPath)) {
+            throw new \Exception('Arquivo Config/AuthGroups.php não tem permissão de escrita');
+        }
+
+        // Ler o arquivo atual
+        $content = file_get_contents($configPath);
+        if ($content === false) {
+            throw new \Exception('Não foi possível ler o arquivo Config/AuthGroups.php');
+        }
+
+        // Procurar e remover a linha da permissão
+        $pattern = "/\s*'$permissionName'\s*=>\s*'[^']*',?\s*\n/";
+        $newContent = preg_replace($pattern, '', $content);
+        
+        if ($newContent === null) {
+            throw new \Exception('Erro ao processar o arquivo Config/AuthGroups.php');
+        }
+        
+        if ($newContent === $content) {
+            throw new \Exception('Permissão não encontrada no arquivo Config/AuthGroups.php');
+        }
+
+        // Salvar o arquivo
+        if (file_put_contents($configPath, $newContent) === false) {
+            throw new \Exception('Não foi possível salvar o arquivo Config/AuthGroups.php');
+        }
+
+        // Limpar cache do OPcache se estiver ativo
         if (function_exists('opcache_invalidate')) {
             opcache_invalidate($configPath);
         }

@@ -48,7 +48,7 @@ WORKDIR /var/www/html
 COPY . .
 
 # Configura arquivo .env para Docker (produção/container)
-RUN cp .env.docker.backup .env
+RUN chmod +x scripts/setup-env-docker.sh && scripts/setup-env-docker.sh
 
 # Instala dependências
 RUN git config --global --add safe.directory /var/www/html

@@ -184,6 +184,11 @@ jobs:
             fi
             echo "Database not ready yet ($i)..."; sleep 2
           done
+          
+          echo "Running database diagnostics..."
+          docker exec -w /var/www/html "$CID" chmod +x scripts/db-diagnostic.sh
+          docker exec -w /var/www/html "$CID" scripts/db-diagnostic.sh || true
+          
           echo "Running migrations in container $CID"
           docker exec -w /var/www/html "$CID" php spark migrate --all
           echo "Seeding AdminUserSeeder"

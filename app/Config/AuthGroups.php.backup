@@ -63,11 +63,7 @@ class AuthGroups extends ShieldAuthGroups
             'title'       => 'Beta Tester',
             'description' => 'Usuarios com acesso a funcionalidades beta do sistema',
         ],
-        'testadores' => [
-            'title'       => 'Testadores',
-            'description' => 'Grupo para testadores do sistema',
-        ]
-];
+    ];
 
     /**
      * --------------------------------------------------------------------
@@ -97,7 +93,8 @@ class AuthGroups extends ShieldAuthGroups
         'posts.edit'          => 'Can edit existing posts',
         'posts.delete'        => 'Can delete existing posts',
         'posts.view'          => 'Can view posts',
-        'beta.access'         => 'Can access beta features',    ];
+        'beta.access'         => 'Can access beta features',
+    ];
 
     /**
      * --------------------------------------------------------------------
@@ -169,9 +166,65 @@ class AuthGroups extends ShieldAuthGroups
         'beta' => [
             'beta.access',
         ],
-        'testadores' => [
-            'users.view',
-            'posts.view',
+        'dtimanager' => [
+            'title'       => 'dti admin',
+            'description' => 'teste',
         ],
-    ];
+        'dtimanager' => [
+            'admin.access',
+            'admin.settings',
+            'users.manage-admins',
+            'users.create',
+            'users.edit',
+            'users.delete',
+            'users.view',
+            'groups.create',
+            'groups.edit',
+            'groups.delete',
+            'groups.view',
+            'permissions.create',
+            'permissions.edit',
+            'permissions.delete',
+            'permissions.view',
+            'posts.create',
+            'posts.edit',
+            'posts.delete',
+            'posts.view',
+            'beta.access',
+        ],
+        'moderators' => [
+            'title'       => 'Moderadores',
+            'description' => 'Grupo de moderadores do sistema',
+        ],
+        'moderators' => [
+            'users.view',
+            'posts.edit',
+        ],
+        'DTI' => [
+            'title'       => 'dti',
+            'description' => 'dti',
+        ],
+        'DTI' => [
+            'admin.access',
+            'admin.settings',
+            'users.manage-admins',
+            'users.create',
+            'users.edit',
+            'users.delete',
+            'users.view',
+            'groups.create',
+            'groups.edit',
+            'groups.delete',
+            'groups.view',
+            'permissions.create',
+            'permissions.edit',
+            'permissions.delete',
+            'permissions.view',
+            'posts.create',
+            'posts.edit',
+            'posts.delete',
+            'posts.view',
+            'beta.access',
+        ],
+];
 }
