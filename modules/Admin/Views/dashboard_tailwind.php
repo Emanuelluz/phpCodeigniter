@@ -68,7 +68,7 @@
                     
                     <a href="<?= base_url('admin/permissions') ?>" class="text-gray-700 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium mt-1 rounded-md">
                         <svg class="text-gray-400 group-hover:text-gray-500 mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1721.75 8.25z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
                         </svg>
                         Permissões
                     </a>
@@ -166,128 +166,68 @@
                     <div class="bg-white rounded-lg shadow border border-gray-200 p-6 hover:shadow-md transition-shadow">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
-                                <div class="w-8 h-8 bg-blue-600 rounded-md flex items-center justify-center">
+                                <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
                                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                     </svg>
                                 </div>
                             </div>
                             <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-600">Online Agora</p>
-                                <p class="text-3xl font-bold text-gray-900">1</p>
+                                <p class="text-sm font-medium text-gray-600">Total de Grupos</p>
+                                <p class="text-3xl font-bold text-gray-900"><?= count((array) config('AuthGroups')->groups) ?></p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- System Configuration Warning -->
-                <div class="mb-8">
-                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <h3 class="text-sm font-medium text-yellow-800">Configuração do Sistema</h3>
-                                <div class="mt-2 text-sm text-yellow-700">
-                                    <p>Os grupos Shield precisam ser criados no banco de dados. Para que o sistema funcione corretamente, é necessário executar a configuração inicial.</p>
-                                </div>
-                                <div class="mt-4">
-                                    <a href="/test/seed-groups" target="_blank" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-yellow-800 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        </svg>
-                                        Criar Grupos no Banco de Dados
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recent Users Table -->
+                <!-- Recent Users -->
                 <div class="bg-white rounded-lg shadow border border-gray-200">
                     <div class="px-6 py-4 border-b border-gray-200">
-                        <div class="flex items-center">
-                            <svg class="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <h3 class="text-lg font-medium text-gray-900">Usuários Recentes</h3>
-                        </div>
+                        <h3 class="text-lg font-medium text-gray-900">Usuários Recentes</h3>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grupos</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Criado em</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <?php if (empty($recentUsers)): ?>
-                                <tr>
-                                    <td colspan="7" class="px-6 py-12 text-center text-gray-500">
-                                        Nenhum usuário encontrado
-                                    </td>
-                                </tr>
+                    <div class="px-6 py-4">
+                        <div class="flow-root">
+                            <ul role="list" class="-my-5 divide-y divide-gray-200">
+                                <?php if (isset($recentUsers) && !empty($recentUsers)): ?>
+                                    <?php foreach ($recentUsers as $user): ?>
+                                        <li class="py-4">
+                                            <div class="flex items-center space-x-4">
+                                                <div class="flex-shrink-0">
+                                                    <div class="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
+                                                        <span class="text-sm font-medium text-gray-700">
+                                                            <?= strtoupper(substr($user->username ?? 'U', 0, 2)) ?>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                                        <?= esc($user->getEmail()) ?>
+                                                    </p>
+                                                    <p class="text-sm text-gray-500 truncate">
+                                                        <?= esc($user->username ?? 'N/A') ?>
+                                                    </p>
+                                                </div>
+                                                <div class="flex-shrink-0">
+                                                    <?php if ($user->active): ?>
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                            Ativo
+                                                        </span>
+                                                    <?php else: ?>
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                            Inativo
+                                                        </span>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    <?php endforeach; ?>
                                 <?php else: ?>
-                                <?php foreach ($recentUsers as $user): ?>
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?= esc($user->id) ?></td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900"><?= esc($user->username) ?></div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= esc($user->email) ?></td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <?php 
-                                        $groups = $user->getGroups();
-                                        if (empty($groups)): ?>
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Nenhum</span>
-                                        <?php else: ?>
-                                            <?php foreach ($groups as $group): ?>
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mr-1"><?= esc($group) ?></span>
-                                            <?php endforeach; ?>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <?php if ($user->active): ?>
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Ativo</span>
-                                        <?php else: ?>
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Inativo</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <?= date('d/m/Y H:i', strtotime($user->created_at)) ?>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <a href="/admin/users/edit/<?= $user->id ?>" class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                            </svg>
-                                            Editar
-                                        </a>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
+                                    <li class="py-4">
+                                        <p class="text-sm text-gray-500 text-center">Nenhum usuário recente encontrado.</p>
+                                    </li>
                                 <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="px-6 py-4 border-t border-gray-200 text-right">
-                        <a href="/admin/users" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            Ver Todos os Usuários
-                            <svg class="ml-2 -mr-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                            </svg>
-                        </a>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </main>

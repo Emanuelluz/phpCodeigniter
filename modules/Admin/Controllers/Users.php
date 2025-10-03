@@ -52,7 +52,8 @@ class Users extends BaseController
             'pager' => $pager,
             'search' => $search,
             'group' => $group,
-            'status' => $status
+            'status' => $status,
+            'currentUser' => auth()->user()
         ]);
     }
     

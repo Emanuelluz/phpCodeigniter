@@ -256,7 +256,7 @@
                                                         Editar
                                                     </a>
                                                     
-                                                    <?php if (isset($currentUser) && $currentUser->id != $user->id): ?>
+                                                    <?php if ($currentUser->id != $user->id): ?>
                                                         <button 
                                                             onclick="toggleUserStatus(<?= $user->id ?>, <?= $user->active ? 'false' : 'true' ?>)" 
                                                             class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md <?= $user->active ? 'text-yellow-700 bg-yellow-100 hover:bg-yellow-200' : 'text-green-700 bg-green-100 hover:bg-green-200' ?> focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
