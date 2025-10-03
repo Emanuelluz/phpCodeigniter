@@ -26,14 +26,18 @@ fi
 cp "$ENV_PRODUCTION" "$ENV_FILE"
 echo "Copiado $ENV_PRODUCTION para $ENV_FILE"
 
-# Garante que o diretório de sessões existe e tem permissões corretas
+# Garante que o diretório de sessões existe mesmo com sessões em banco (fallback)
 SESSION_DIR="$BASE_DIR/writable/session"
 if [ ! -d "$SESSION_DIR" ]; then
-    echo "Criando diretório de sessões: $SESSION_DIR"
+    echo "Criando diretório de sessões (fallback): $SESSION_DIR"
     mkdir -p "$SESSION_DIR"
 fi
 chmod 755 "$SESSION_DIR"
 echo "Diretório de sessões configurado: $SESSION_DIR"
+
+# Garante que o diretório writable tem permissões corretas
+chmod -R 755 "$BASE_DIR/writable"
+echo "Permissões do diretório writable configuradas"
 
 # Verifica o resultado
 echo ""

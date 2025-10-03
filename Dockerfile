@@ -62,6 +62,7 @@ RUN php spark shield:setup || true
 
 # Configura permissões
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+    && chmod -R 755 /var/www/html \
+    && chmod -R 777 /var/www/html/writable
 
 EXPOSE 80
