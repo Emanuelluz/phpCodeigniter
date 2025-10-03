@@ -6,7 +6,7 @@ services:
     build:
       context: https://github.com/Emanuelluz/phpCodeigniter.git#main  # ajuste para sua URL e branch
       dockerfile: Dockerfile
-    image: seu-registry/phpcodeigniter:latest  # opcional: push para registry
+    image: phpcodeigniter:latest  # opcional: push para registry
     deploy:
       replicas: 2
       placement:
