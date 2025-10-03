@@ -57,6 +57,19 @@ writable/logs/*
 writable/session/*
 !writable/session/index.html
 
+#-------------------------
+# Database & Session Files
+#-------------------------
+# SQLite database files
+writable/database.db
+writable/database.db-*
+database.db
+*.db
+
+# Session files
+ci_session*
+public/null/ci_session*
+
 writable/uploads/*
 !writable/uploads/index.html
 
