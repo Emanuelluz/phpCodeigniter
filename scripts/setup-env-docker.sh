@@ -11,40 +11,20 @@ else
 fi
 
 ENV_FILE="$BASE_DIR/.env"
-ENV_DOCKER_BACKUP="$BASE_DIR/.env.docker.backup"
+ENV_PRODUCTION="$BASE_DIR/.env.production"
 
 echo "=== Configurando .env para Docker/MariaDB ==="
 echo "Diretório base: $BASE_DIR"
 
-# Verifica se existe .env.docker.backup
-if [ ! -f "$ENV_DOCKER_BACKUP" ]; then
-    echo "ERRO: $ENV_DOCKER_BACKUP não encontrado!"
+# Verifica se existe .env.production
+if [ ! -f "$ENV_PRODUCTION" ]; then
+    echo "ERRO: $ENV_PRODUCTION não encontrado!"
     exit 1
 fi
 
-# Copia .env.docker.backup para .env
-cp "$ENV_DOCKER_BACKUP" "$ENV_FILE"
-echo "Copiado $ENV_DOCKER_BACKUP para $ENV_FILE"
-
-# Força configurações específicas para garantir MariaDB
-cat >> "$ENV_FILE" << 'EOF'
-
-# Configurações forçadas para Docker/MariaDB (adicionadas pelo script)
-CI_DATABASE_GROUP = default
-database.default.hostname = mariadb
-database.default.database = codeigniter
-database.default.username = ciuser
-database.default.password = cipass
-database.default.DBDriver = MySQLi
-database.default.port = 3306
-
-# Configurações de sessão para Docker
-session.driver = 'CodeIgniter\Session\Handlers\FileHandler'
-# session.savePath usa o padrão WRITEPATH . 'session'
-
-EOF
-
-echo "Configurações adicionais adicionadas ao .env"
+# Copia .env.production para .env
+cp "$ENV_PRODUCTION" "$ENV_FILE"
+echo "Copiado $ENV_PRODUCTION para $ENV_FILE"
 
 # Garante que o diretório de sessões existe e tem permissões corretas
 SESSION_DIR="$BASE_DIR/writable/session"
@@ -58,7 +38,7 @@ echo "Diretório de sessões configurado: $SESSION_DIR"
 # Verifica o resultado
 echo ""
 echo "=== Verificação do arquivo .env final ==="
-grep -E "database\.|CI_" "$ENV_FILE"
+grep -E "database\.|CI_|session\." "$ENV_FILE" | head -10
 
 echo ""
 echo "=== Configuração concluída ==="
