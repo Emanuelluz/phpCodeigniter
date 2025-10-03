@@ -57,7 +57,7 @@ class Groups extends BaseController
                 // Obter permissões do grupo
                 $permissions = is_array($authMatrix) ? ($authMatrix[$groupName] ?? []) : [];
                 
-                $groups[] = [
+                $groups[$groupName] = [
                     'name' => $groupName,
                     'title' => is_array($groupConfig) ? ($groupConfig['title'] ?? $groupName) : $groupName,
                     'description' => is_array($groupConfig) ? ($groupConfig['description'] ?? '') : '',
@@ -92,6 +92,9 @@ class Groups extends BaseController
     {
         // Verificar se o usuário está logado
         if (!auth()->loggedIn()) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['error' => 'Não autorizado'])->setStatusCode(401);
+            }
             return redirect()->to(url_to('login'));
         }
 
@@ -103,33 +106,65 @@ class Groups extends BaseController
         ];
 
         if (!$this->validate($rules)) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'error' => 'Dados inválidos',
+                    'validation' => $this->validator->getErrors()
+                ])->setStatusCode(400);
+            }
             return redirect()->back()
                 ->withInput()
                 ->with('errors', $this->validator->getErrors());
         }
 
-    $name = (string) $this->request->getPost('name');
-    $title = (string) $this->request->getPost('title');
-    $description = (string) $this->request->getPost('description');
-    $permissions = (array) $this->request->getPost('permissions');
+        $name = (string) $this->request->getPost('name');
+        $title = (string) $this->request->getPost('title');
+        $description = (string) $this->request->getPost('description');
+        $permissions = (array) $this->request->getPost('permissions');
 
         // Verificar se o grupo já existe
         $authGroupsConfig = config('AuthGroups');
         $currentGroups = $authGroupsConfig->groups ?? [];
         if (isset($currentGroups[$name])) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'error' => 'Grupo já existe com este nome.'
+                ])->setStatusCode(400);
+            }
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Grupo já existe com este nome.');
         }
 
         try {
+            // Log para debug
+            log_message('info', 'Tentando criar grupo: ' . $name . ' - ' . $title);
+            
             // Adicionar grupo ao arquivo AuthGroups.php
             $this->addGroupToConfig($name, $title, $description, $permissions);
+            
+            log_message('info', 'Grupo criado com sucesso: ' . $name);
+            
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'success' => true,
+                    'message' => 'Grupo criado com sucesso!'
+                ]);
+            }
             
             session()->setFlashdata('success', 'Grupo criado com sucesso!');
             return redirect()->to(base_url('admin/groups'));
 
         } catch (\Exception $e) {
+            log_message('error', 'Erro ao criar grupo: ' . $e->getMessage());
+            log_message('error', 'Stack trace: ' . $e->getTraceAsString());
+            
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'error' => 'Erro ao criar grupo: ' . $e->getMessage()
+                ])->setStatusCode(500);
+            }
+            
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Erro ao criar grupo: ' . $e->getMessage());
@@ -148,11 +183,19 @@ class Groups extends BaseController
         $authGroups = $authGroupsConfig->groups ?? [];
         
         if (!isset($authGroups[$groupName])) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['error' => 'Grupo não encontrado']);
+            }
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
         $group = $authGroups[$groupName];
         $group['name'] = $groupName;
+
+        // Se for requisição AJAX, retornar JSON
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON($group);
+        }
 
         // Obter permissões do grupo diretamente da configuração
         $authMatrix = $authGroupsConfig->matrix ?? [];
@@ -172,6 +215,9 @@ class Groups extends BaseController
     {
         // Verificar se o usuário está logado
         if (!auth()->loggedIn()) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['error' => 'Não autorizado'])->setStatusCode(401);
+            }
             return redirect()->to(url_to('login'));
         }
 
@@ -179,7 +225,22 @@ class Groups extends BaseController
         $authGroupsConfig = config('AuthGroups');
         $authGroups = $authGroupsConfig->groups ?? [];
         if (!isset($authGroups[$groupName])) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['error' => 'Grupo não encontrado'])->setStatusCode(404);
+            }
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        // Obter dados da requisição
+        if ($this->request->isAJAX()) {
+            $input = $this->request->getJSON(true);
+            $title = $input['title'] ?? '';
+            $description = $input['description'] ?? '';
+            $permissions = $input['permissions'] ?? [];
+        } else {
+            $title = (string) $this->request->getPost('title');
+            $description = (string) $this->request->getPost('description');
+            $permissions = (array) $this->request->getPost('permissions');
         }
 
         // Validação
@@ -188,24 +249,33 @@ class Groups extends BaseController
             'description' => 'max_length[255]'
         ];
 
-        if (!$this->validate($rules)) {
+        $validation = \Config\Services::validation();
+        $validation->setRules($rules);
+        
+        if (!$validation->run(['title' => $title, 'description' => $description])) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['error' => 'Dados inválidos', 'validation' => $validation->getErrors()])->setStatusCode(400);
+            }
             return redirect()->back()
                 ->withInput()
-                ->with('errors', $this->validator->getErrors());
+                ->with('errors', $validation->getErrors());
         }
-
-    $title = (string) $this->request->getPost('title');
-    $description = (string) $this->request->getPost('description');
-    $permissions = (array) $this->request->getPost('permissions');
 
         try {
             // Atualizar arquivo de configuração permanentemente
             $this->updateAuthGroupsConfig($groupName, $title, $description, $permissions);
             
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['success' => true, 'message' => 'Grupo atualizado com sucesso!']);
+            }
+            
             return redirect()->to(base_url('admin/groups'))
                 ->with('success', 'Grupo atualizado com sucesso!');
 
         } catch (\Exception $e) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['error' => 'Erro ao atualizar grupo: ' . $e->getMessage()])->setStatusCode(500);
+            }
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Erro ao atualizar grupo: ' . $e->getMessage());
@@ -312,7 +382,7 @@ class Groups extends BaseController
     private function addGroupToConfig($groupName, $title, $description, $permissions)
     {
         $configPath = APPPATH . 'Config/AuthGroups.php';
-        
+
         if (!is_writable($configPath)) {
             throw new \Exception('Arquivo Config/AuthGroups.php não tem permissão de escrita');
         }
@@ -328,53 +398,47 @@ class Groups extends BaseController
             throw new \Exception('Grupo já existe no arquivo de configuração');
         }
 
-        // Procurar o final da array $groups - ser mais específico
-        $groupsStart = strpos($content, 'public array $groups = [');
-        if ($groupsStart === false) {
-            throw new \Exception('Não foi possível encontrar public array $groups');
+        // Escapar caracteres especiais
+        $escapedTitle = addslashes($title);
+        $escapedDescription = addslashes($description);
+
+        // Dividir o conteúdo em linhas para manipulação mais precisa
+        $lines = explode("\n", $content);
+        $groupsStart = -1;
+        $groupsEnd = -1;
+
+        // Encontrar os limites da array $groups
+        foreach ($lines as $i => $line) {
+            if (strpos($line, 'public array $groups = [') !== false) {
+                $groupsStart = $i;
+            }
+            if ($groupsStart !== -1 && strpos($line, '];') !== false && $groupsEnd === -1) {
+                $groupsEnd = $i;
+                break;
+            }
         }
-        
-        // Encontrar o próximo ]; após a declaração de $groups
-        $searchStart = $groupsStart + strlen('public array $groups = [');
-        $nextArrayStart = strpos($content, 'public array $', $searchStart);
-        
-        if ($nextArrayStart !== false) {
-            // Procurar ]; antes da próxima array
-            $groupsEnd = strrpos(substr($content, 0, $nextArrayStart), '];');
-        } else {
-            // Se não há próxima array, procurar o último ];
-            $groupsEnd = strrpos($content, '];');
-        }
-        
-        if ($groupsEnd === false) {
-            throw new \Exception('Não foi possível encontrar o final da array $groups');
+
+        if ($groupsStart === -1 || $groupsEnd === -1) {
+            throw new \Exception('Não foi possível encontrar a seção $groups no arquivo');
         }
 
         // Preparar o novo grupo
-        $newGroup = "        '{$groupName}' => [\n";
-        $newGroup .= "            'title'       => '{$title}',\n";
-        $newGroup .= "            'description' => '{$description}',\n";
-        $newGroup .= "        ],\n";
+        $newGroupLines = [
+            "        '{$groupName}' => [",
+            "            'title'       => '{$escapedTitle}',",
+            "            'description' => '{$escapedDescription}',",
+            "        ],"
+        ];
 
-        // Inserir o novo grupo antes do final da array
-        $beforeGroups = substr($content, 0, $groupsEnd);
-        $afterGroups = substr($content, $groupsEnd);
-        $content = $beforeGroups . $newGroup . $afterGroups;
+        // Inserir o novo grupo antes do fechamento da array
+        array_splice($lines, $groupsEnd, 0, $newGroupLines);
+
+        // Reconstruir o conteúdo
+        $content = implode("\n", $lines);
 
         // Adicionar permissões à matriz se especificadas
         if (!empty($permissions)) {
-            $matrixStart = strpos($content, 'public array $matrix = [');
-            if ($matrixStart !== false) {
-                $matrixEnd = strrpos($content, '];', $matrixStart);
-                if ($matrixEnd !== false) {
-                    $permissionsList = implode("',\n            '", $permissions);
-                    $newMatrix = "        '{$groupName}' => [\n            '{$permissionsList}',\n        ],\n";
-                    
-                    $beforeMatrix = substr($content, 0, $matrixEnd);
-                    $afterMatrix = substr($content, $matrixEnd);
-                    $content = $beforeMatrix . $newMatrix . $afterMatrix;
-                }
-            }
+            $this->addPermissionsToMatrix($groupName, $permissions);
         }
 
         // Salvar o arquivo
@@ -503,6 +567,68 @@ class Groups extends BaseController
         }
         
         // Limpar cache de configuração se existir
+        if (function_exists('opcache_invalidate')) {
+            opcache_invalidate($configPath);
+        }
+    }
+
+    /**
+     * Adicionar permissões à matriz de um grupo
+     */
+    private function addPermissionsToMatrix($groupName, $permissions)
+    {
+        $configPath = APPPATH . 'Config/AuthGroups.php';
+
+        if (!is_writable($configPath)) {
+            throw new \Exception('Arquivo Config/AuthGroups.php não tem permissão de escrita');
+        }
+
+        // Ler o arquivo atual
+        $content = file_get_contents($configPath);
+        if ($content === false) {
+            throw new \Exception('Não foi possível ler o arquivo Config/AuthGroups.php');
+        }
+
+        // Dividir o conteúdo em linhas para manipulação mais precisa
+        $lines = explode("\n", $content);
+        $matrixStart = -1;
+        $matrixEnd = -1;
+
+        // Encontrar os limites da array $matrix
+        foreach ($lines as $i => $line) {
+            if (strpos($line, 'public array $matrix = [') !== false) {
+                $matrixStart = $i;
+            }
+            if ($matrixStart !== -1 && strpos($line, '];') !== false && $matrixEnd === -1) {
+                $matrixEnd = $i;
+                break;
+            }
+        }
+
+        if ($matrixStart === -1 || $matrixEnd === -1) {
+            throw new \Exception('Não foi possível encontrar a seção $matrix no arquivo');
+        }
+
+        // Preparar as permissões do grupo
+        $permissionsList = "'" . implode("',\n            '", $permissions) . "'";
+        $newMatrixLines = [
+            "        '{$groupName}' => [",
+            "            {$permissionsList},",
+            "        ],"
+        ];
+
+        // Inserir o novo grupo na matriz antes do fechamento da array
+        array_splice($lines, $matrixEnd, 0, $newMatrixLines);
+
+        // Reconstruir o conteúdo
+        $content = implode("\n", $lines);
+
+        // Salvar o arquivo
+        if (file_put_contents($configPath, $content) === false) {
+            throw new \Exception('Não foi possível salvar o arquivo Config/AuthGroups.php');
+        }
+
+        // Limpar cache do OPcache se estiver ativo
         if (function_exists('opcache_invalidate')) {
             opcache_invalidate($configPath);
         }

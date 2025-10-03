@@ -15,6 +15,9 @@ namespace Config;
 
 use CodeIgniter\Shield\Config\AuthGroups as ShieldAuthGroups;
 
+/**
+ * Configure available authorization groups
+ */
 class AuthGroups extends ShieldAuthGroups
 {
     /**
@@ -31,17 +34,11 @@ class AuthGroups extends ShieldAuthGroups
      * --------------------------------------------------------------------
      * An associative array of the available groups in the system, where the keys
      * are the group names and the values are arrays of the group info.
-     *
-     * Whatever value you assign as the key will be used to refer to the group
-     * when using functions such as:
-     *      $user->addGroup('superadmin');
-     *
-     * @var array<string, array<string, string>>
      */
-    public array $groups = [
+    public $groups = [
         'superadmin' => [
             'title'       => 'Super Admin',
-            'description' => 'Controle completo sobre o sistema',
+            'description' => 'Controle completo sobre o sistema teste',
         ],
         'admin' => [
             'title'       => 'Admin Atualizado',
@@ -67,15 +64,11 @@ class AuthGroups extends ShieldAuthGroups
             'title'       => 'Testadores',
             'description' => 'Grupo para testadores do sistema',
         ],
-        'LLL' => [
-            'title'       => 'LLL#L',
-            'description' => 'fdgfgfgfgf',
+        'PEFB' => [
+            'title'       => 'Beltrao',
+            'description' => 'sd',
         ],
-        'Ldap' => [
-            'title'       => 'Ldap',
-            'description' => 'Ldap',
-        ],
-];
+    ];
 
     /**
      * --------------------------------------------------------------------
@@ -85,27 +78,33 @@ class AuthGroups extends ShieldAuthGroups
      *
      * If a permission is not listed here it cannot be used.
      */
-    public array $permissions = [
-        'admin.access' => 'Acesso completo à área administrativa do sistema',
-        'admin.settings' => 'Pode alterar as configurações do sistema',
-        'users.manage-admins' => 'Pode gerenciar outros administradores',
-        'users.create' => 'Pode criar novos usuários não administradores',
-        'users.edit' => 'Pode editar usuários não administradores existentes',
-        'users.delete' => 'Pode excluir usuários não administradores existentes',
-        'users.view' => 'Pode visualizar usuários',
-        'groups.create' => 'Pode criar novos grupos',
-        'groups.edit' => 'Pode editar grupos existente',
-        'groups.delete' => 'Pode excluir grupos existente',
-        'groups.view' => 'Pode visualizar grupos ',
-        'permissions.create' => 'Pode criar novas permissões',
-        'permissions.edit' => 'Pode editar permissões existente',
-        'permissions.delete' => 'Pode deletar permissões existente',
-        'permissions.view' => 'Pode visualizar pemissões',
-        'posts.create'        => 'Can create new posts',
-        'posts.edit'          => 'Can edit existing posts',
-        'posts.delete'        => 'Can delete existing posts',
-        'posts.view'          => 'Can view posts',
-        'beta.access'         => 'Can access beta features',];
+    public $permissions = [
+        'admin.access'        => 'Pode acessar areas administrativas',
+        'admin.settings'      => 'Pode alterar configuracoes do sistema',
+        'users.manage'        => 'Pode gerenciar usuarios do sistema',
+        'users.create'        => 'Pode criar novos usuarios',
+        'users.edit'          => 'Pode editar usuarios existentes',
+        'users.delete'        => 'Pode excluir usuarios',
+        'users.view'          => 'Pode visualizar usuarios',
+        'groups.manage'       => 'Pode gerenciar grupos de usuarios',
+        'groups.create'       => 'Pode criar novos grupos',
+        'groups.edit'         => 'Pode editar grupos existentes',
+        'groups.delete'       => 'Pode excluir grupos',
+        'groups.view'         => 'Pode visualizar grupos',
+        'permissions.manage'  => 'Pode gerenciar permissoes do sistema',
+        'permissions.create'  => 'Pode criar novas permissoes',
+        'permissions.edit'    => 'Pode editar permissoes existentes',
+        'permissions.delete'  => 'Pode excluir permissoes',
+        'permissions.view'    => 'Pode visualizar permissoes',
+        'beta.access'         => 'Acesso a funcionalidades beta',
+        'developer.access'    => 'Acesso a ferramentas de desenvolvimento',
+        'api.access'          => 'Pode acessar APIs do sistema',
+        'reports.view'        => 'Pode visualizar relatorios',
+        'reports.create'      => 'Pode criar relatorios',
+        'files.upload'        => 'Pode fazer upload de arquivos',
+        'files.download'      => 'Pode fazer download de arquivos',
+        'logs.view'           => 'Pode visualizar logs do sistema',
+    ];
 
     /**
      * --------------------------------------------------------------------
@@ -113,79 +112,78 @@ class AuthGroups extends ShieldAuthGroups
      * --------------------------------------------------------------------
      * Maps permissions to groups.
      *
-     * This defines group-level permissions.
+     * This defines which permissions each group contains. The group's
+     * permission is always included in the user's permissions.
      */
-    public array $matrix = [
+    public $matrix = [
         'superadmin' => [
-            'admin.access',
-            'admin.settings',
-            'users.manage-admins',
-            'users.create',
-            'users.edit',
-            'users.delete',
-            'users.view',
-            'groups.create',
-            'groups.edit',
-            'groups.delete',
-            'groups.view',
-            'permissions.create',
-            'permissions.edit',
-            'permissions.delete',
-            'permissions.view',
-            'posts.create',
-            'posts.edit',
-            'posts.delete',
-            'posts.view',
+            'admin.*',
+            'users.*',
+            'groups.*',
+            'permissions.*',
+            'beta.*',
+            'developer.*',
+            'api.*',
+            'reports.*',
+            'files.*',
+            'logs.*',
         ],
         'admin' => [
             'admin.access',
             'admin.settings',
+            'users.manage',
             'users.create',
             'users.edit',
-            'users.delete',
             'users.view',
             'groups.view',
-            'groups.edit',
             'permissions.view',
-            'posts.*',
+            'reports.view',
+            'reports.create',
+            'files.upload',
+            'files.download',
         ],
         'developer' => [
             'admin.access',
-            'admin.settings',
-            'users.create',
-            'users.edit',
+            'developer.access',
+            'api.access',
+            'logs.view',
             'users.view',
-            'groups.create',
-            'groups.edit',
-            'groups.delete',
             'groups.view',
-            'permissions.create',
-            'permissions.edit',
-            'permissions.delete',
             'permissions.view',
-            'posts.*',
-            'beta.access',
+            'files.upload',
+            'files.download',
         ],
         'manager' => [
-            'users.create',
-            'users.edit',
+            'admin.access',
             'users.view',
             'groups.view',
-            'posts.*',
+            'reports.view',
+            'reports.create',
+            'files.upload',
+            'files.download',
         ],
-        'user' => [],
+        'user' => [
+            'files.download',
+        ],
         'beta' => [
             'beta.access',
+            'files.upload',
+            'files.download',
         ],
         'testadores' => [
+            'admin.access',
             'users.view',
-            'posts.view',
+            'groups.view',
+            'permissions.view',
+            'beta.access',
+            'files.upload',
+            'files.download',
         ],
-                    'LLL' => [
-            'admin.access',
+        'PEFB' => [
+            'files.upload',
+            'files.download',
         ],
-        'Ldap' => [
-            'admin.access',
-        ],
-];
-}
+    ];
+}   
+
+

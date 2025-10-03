@@ -250,6 +250,80 @@
         </div>
     </div>
 
+    <!-- Edit Group Modal -->
+    <div id="editGroupModal" class="fixed inset-0 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+            
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <form id="editGroupForm" onsubmit="updateGroup(event)">
+                    <input type="hidden" id="editGroupOriginalName" name="originalName">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+                                    Editar Grupo
+                                </h3>
+                                
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="editGroupName" class="block text-sm font-medium text-gray-700">Nome do Grupo</label>
+                                        <input 
+                                            type="text" 
+                                            id="editGroupName" 
+                                            name="name" 
+                                            required 
+                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                            placeholder="ex: moderators"
+                                        >
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="editGroupTitle" class="block text-sm font-medium text-gray-700">Título</label>
+                                        <input 
+                                            type="text" 
+                                            id="editGroupTitle" 
+                                            name="title" 
+                                            required 
+                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                            placeholder="Moderadores"
+                                        >
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="editGroupDescription" class="block text-sm font-medium text-gray-700">Descrição</label>
+                                        <textarea 
+                                            id="editGroupDescription" 
+                                            name="description" 
+                                            rows="3"
+                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                            placeholder="Descrição do grupo"
+                                        ></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button 
+                            type="submit" 
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm"
+                        >
+                            Atualizar Grupo
+                        </button>
+                        <button 
+                            type="button" 
+                            onclick="closeEditGroupModal()"
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                        >
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Create Group Modal -->
     <div id="createGroupModal" class="fixed inset-0 z-50 hidden">
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -257,6 +331,7 @@
             
             <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 <form id="createGroupForm" onsubmit="createGroup(event)">
+                    <?= csrf_field() ?>
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="sm:flex sm:items-start">
                             <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
@@ -334,19 +409,25 @@
             document.getElementById('createGroupForm').reset();
         }
 
-        async function createGroup(event) {
+        function closeEditGroupModal() {
+            document.getElementById('editGroupModal').classList.add('hidden');
+            document.getElementById('editGroupForm').reset();
+        }
+
+        async function updateGroup(event) {
             event.preventDefault();
             
             const formData = new FormData(event.target);
             const data = {
+                originalName: formData.get('originalName'),
                 name: formData.get('name'),
                 title: formData.get('title'),
                 description: formData.get('description')
             };
 
             try {
-                const response = await fetch('<?= base_url('admin/groups/create') ?>', {
-                    method: 'POST',
+                const response = await fetch(`<?= base_url('admin/groups/update') ?>/${data.originalName}`, {
+                    method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
@@ -357,16 +438,74 @@
                 if (response.ok) {
                     location.reload();
                 } else {
-                    alert('Erro ao criar grupo');
+                    alert('Erro ao atualizar grupo');
                 }
             } catch (error) {
                 alert('Erro de conexão');
             }
         }
 
+        async function createGroup(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            
+            // Obter token CSRF
+            const csrfName = '<?= csrf_token() ?>';
+            const csrfHash = '<?= csrf_hash() ?>';
+
+            try {
+                const response = await fetch('<?= base_url('admin/groups/store') ?>', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+
+                const result = await response.text();
+                
+                if (response.ok) {
+                    // Sucesso - recarregar página
+                    location.reload();
+                } else {
+                    // Erro - mostrar mensagem
+                    console.error('Erro na resposta:', result);
+                    alert('Erro ao criar grupo. Verifique os dados e tente novamente.');
+                }
+            } catch (error) {
+                console.error('Erro de conexão:', error);
+                alert('Erro de conexão. Tente novamente.');
+            }
+        }
+
         async function editGroup(groupName) {
-            // Implementar edição de grupo
-            alert(`Editar grupo: ${groupName}`);
+            try {
+                // Buscar dados do grupo
+                const response = await fetch(`<?= base_url('admin/groups/edit') ?>/${groupName}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (response.ok) {
+                    const groupData = await response.json();
+                    
+                    // Preencher o modal de edição
+                    document.getElementById('editGroupName').value = groupData.name;
+                    document.getElementById('editGroupTitle').value = groupData.title;
+                    document.getElementById('editGroupDescription').value = groupData.description;
+                    document.getElementById('editGroupOriginalName').value = groupData.name;
+                    
+                    // Abrir modal de edição
+                    document.getElementById('editGroupModal').classList.remove('hidden');
+                } else {
+                    alert('Erro ao carregar dados do grupo');
+                }
+            } catch (error) {
+                alert('Erro de conexão');
+            }
         }
 
         async function deleteGroup(groupName) {
@@ -396,6 +535,12 @@
         document.getElementById('createGroupModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeCreateGroupModal();
+            }
+        });
+        
+        document.getElementById('editGroupModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditGroupModal();
             }
         });
     </script>

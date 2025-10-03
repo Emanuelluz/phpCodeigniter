@@ -55,6 +55,9 @@ class Permissions extends Controller
     {
         // Verificar se o usuário está logado
         if (!auth()->loggedIn()) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['error' => 'Não autorizado'])->setStatusCode(401);
+            }
             return redirect()->to(url_to('login'));
         }
 
@@ -65,6 +68,12 @@ class Permissions extends Controller
         ];
 
         if (!$this->validate($rules)) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'error' => 'Dados inválidos',
+                    'validation' => $this->validator->getErrors()
+                ])->setStatusCode(400);
+            }
             return redirect()->back()
                 ->withInput()
                 ->with('errors', $this->validator->getErrors());
@@ -74,21 +83,48 @@ class Permissions extends Controller
         $description = $this->request->getPost('description');
 
         // Verificar se a permissão já existe
-        $currentPermissions = setting('AuthGroups.permissions', []);
+        $authGroupsConfig = config('AuthGroups');
+        $currentPermissions = $authGroupsConfig->permissions ?? [];
         if (isset($currentPermissions[$name])) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'error' => 'Permissão já existe com este nome.'
+                ])->setStatusCode(400);
+            }
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Permissão já existe com este nome.');
         }
 
         try {
+            // Log para debug
+            log_message('info', 'Tentando criar permissão: ' . $name . ' - ' . $description);
+            
             // Adicionar permissão ao arquivo AuthGroups.php
             $this->addPermissionToConfig($name, $description);
+            
+            log_message('info', 'Permissão criada com sucesso: ' . $name);
+            
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'success' => true,
+                    'message' => 'Permissão criada com sucesso!'
+                ]);
+            }
             
             session()->setFlashdata('success', 'Permissão criada com sucesso!');
             return redirect()->to(base_url('admin/permissions'));
 
         } catch (\Exception $e) {
+            log_message('error', 'Erro ao criar permissão: ' . $e->getMessage());
+            log_message('error', 'Stack trace: ' . $e->getTraceAsString());
+            
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'error' => 'Erro ao criar permissão: ' . $e->getMessage()
+                ])->setStatusCode(500);
+            }
+            
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Erro ao criar permissão: ' . $e->getMessage());
@@ -208,9 +244,10 @@ class Permissions extends Controller
         }
 
         // Obter configurações
-        $permissions = setting('AuthGroups.permissions', []);
-        $authGroups = setting('AuthGroups.groups', []);
-        $authMatrix = setting('AuthGroups.matrix', []);
+        $authGroupsConfig = config('AuthGroups');
+        $permissions = $authGroupsConfig->permissions ?? [];
+        $authGroups = $authGroupsConfig->groups ?? [];
+        $authMatrix = $authGroupsConfig->matrix ?? [];
 
         // Preparar matriz completa
         $matrix = [];
@@ -284,35 +321,61 @@ class Permissions extends Controller
             throw new \Exception('Permissão já existe no arquivo de configuração');
         }
 
-        // Procurar o final da array $permissions
-        $permissionsStart = strpos($content, 'public array $permissions = [');
-        if ($permissionsStart === false) {
-            throw new \Exception('Não foi possível encontrar public array $permissions');
-        }
+        // Escapar caracteres especiais na descrição
+        $escapedDescription = addslashes($description);
+
+        // Procurar o padrão mais específico para o final da array de permissões
+        // Buscar por uma linha que termine com ]; e seja seguida por comentário sobre matriz
+        $pattern = '/(\s*)(];)(\s*\/\*\*[\s\S]*?Permissions Matrix)/';
         
-        // Encontrar o próximo ]; após a declaração de $permissions
-        $searchStart = $permissionsStart + strlen('public array $permissions = [');
-        $nextArrayStart = strpos($content, 'public array $', $searchStart);
-        
-        if ($nextArrayStart !== false) {
-            // Procurar ]; antes da próxima array
-            $permissionsEnd = strrpos(substr($content, 0, $nextArrayStart), '];');
+        if (preg_match($pattern, $content, $matches, PREG_OFFSET_CAPTURE)) {
+            // Encontrou o padrão esperado
+            $insertPosition = $matches[1][1]; // Posição antes do ];
+            $whitespace = $matches[1][0]; // Espaçamento encontrado
+            
+            // Verificar se a última linha tem vírgula
+            $beforeContent = substr($content, 0, $insertPosition);
+            $needsComma = !preg_match('/,\s*$/', rtrim($beforeContent));
+            
+            // Preparar a nova permissão
+            $newPermission = '';
+            if ($needsComma) {
+                $newPermission .= ",\n";
+            }
+            $newPermission .= "        '{$permissionName}' => '{$escapedDescription}',\n";
+            
+            // Inserir a nova permissão
+            $afterPermissions = substr($content, $insertPosition);
+            $content = $beforeContent . $newPermission . $whitespace . $afterPermissions;
         } else {
-            // Se não há próxima array, procurar o ]; da seção de permissões
+            // Fallback: método mais simples
+            $permissionsStart = strpos($content, 'public array $permissions = [');
+            if ($permissionsStart === false) {
+                throw new \Exception('Não foi possível encontrar public array $permissions');
+            }
+            
+            // Procurar o primeiro ]; após as permissões
+            $searchStart = $permissionsStart;
             $permissionsEnd = strpos($content, '];', $searchStart);
-        }
-        
-        if ($permissionsEnd === false) {
-            throw new \Exception('Não foi possível encontrar o final da array $permissions');
-        }
+            
+            if ($permissionsEnd === false) {
+                throw new \Exception('Não foi possível encontrar o final da array $permissions');
+            }
 
-        // Preparar a nova permissão
-        $newPermission = "        '{$permissionName}' => '{$description}',\n";
+            // Preparar a nova permissão com vírgula se necessário
+            $beforePermissionsContent = substr($content, 0, $permissionsEnd);
+            
+            $newPermission = '';
+            // Verificar se precisa de vírgula (se não termina com vírgula)
+            if (!preg_match('/,\s*$/', rtrim($beforePermissionsContent))) {
+                $newPermission .= ",\n";
+            }
+            $newPermission .= "        '{$permissionName}' => '{$escapedDescription}',\n";
 
-        // Inserir a nova permissão antes do final da array
-        $beforePermissions = substr($content, 0, $permissionsEnd);
-        $afterPermissions = substr($content, $permissionsEnd);
-        $content = $beforePermissions . $newPermission . $afterPermissions;
+            // Inserir a nova permissão antes do final da array
+            $afterPermissions = substr($content, $permissionsEnd);
+            $content = $beforePermissionsContent . $newPermission . $afterPermissions;
+        }
 
         // Salvar o arquivo
         if (file_put_contents($configPath, $content) === false) {

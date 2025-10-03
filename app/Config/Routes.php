@@ -22,6 +22,10 @@ $routes->get('/test/debug-user', 'DebugUser::index');
 $routes->get('/test/cookie-test', 'CookieTest::index');
 $routes->get('/test-permissions', 'TestPermissions::index');
 
+// Rotas de teste temporárias
+$routes->get('test/permission', 'PermissionTest::testAddPermission');
+$routes->get('test/group', 'PermissionTest::testAddGroup');
+
 // Grupo de rotas para autenticação (Shield)
 $routes->group('/', static function ($routes) {
     // Carrega as rotas do módulo Auth (login/logout personalizado) ANTES das rotas do Shield
@@ -56,7 +60,9 @@ $routes->group('admin', ['namespace' => 'Modules\Admin\Controllers', 'filter' =>
         $routes->post('store', 'Groups::store');
         $routes->get('edit/(:segment)', 'Groups::edit/$1');
         $routes->post('update/(:segment)', 'Groups::update/$1');
+        $routes->put('update/(:segment)', 'Groups::update/$1');
         $routes->post('delete/(:segment)', 'Groups::delete/$1');
+        $routes->delete('delete/(:segment)', 'Groups::delete/$1');
         $routes->get('users/(:segment)', 'Groups::users/$1');
     });
     
@@ -68,6 +74,7 @@ $routes->group('admin', ['namespace' => 'Modules\Admin\Controllers', 'filter' =>
         $routes->get('edit/(:segment)', 'Permissions::edit/$1');
         $routes->post('update/(:segment)', 'Permissions::update/$1');
         $routes->post('delete/(:segment)', 'Permissions::delete/$1');
+        $routes->delete('delete/(:segment)', 'Permissions::delete/$1');
         $routes->get('matrix', 'Permissions::matrix');
         $routes->post('update-matrix', 'Permissions::updateMatrix');
     });

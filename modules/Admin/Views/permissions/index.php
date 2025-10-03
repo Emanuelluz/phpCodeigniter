@@ -367,6 +367,7 @@
             
             <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 <form id="createPermissionForm" onsubmit="createPermission(event)">
+                    <?= csrf_field() ?>
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="sm:flex sm:items-start">
                             <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
@@ -457,27 +458,31 @@
             event.preventDefault();
             
             const formData = new FormData(event.target);
-            const data = {
-                name: formData.get('name'),
-                description: formData.get('description')
-            };
 
             try {
-                const response = await fetch('<?= base_url('admin/permissions/create') ?>', {
+                const response = await fetch('<?= base_url('admin/permissions/store') ?>', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
                     },
-                    body: JSON.stringify(data)
+                    body: formData
                 });
 
+                const result = await response.text();
+                
                 if (response.ok) {
+                    // Sucesso - recarregar página
                     location.reload();
                 } else {
-                    alert('Erro ao criar permissão');
+                    // Erro - mostrar mensagem
+                    console.error('Erro na resposta:', result);
+                    alert('Erro ao criar permissão. Verifique os dados e tente novamente.');
                 }
             } catch (error) {
+                console.error('Erro de conexão:', error);
+                alert('Erro de conexão. Tente novamente.');
+            }
+        }
                 alert('Erro de conexão');
             }
         }
