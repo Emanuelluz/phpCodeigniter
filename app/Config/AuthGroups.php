@@ -66,7 +66,15 @@ class AuthGroups extends ShieldAuthGroups
         'testadores' => [
             'title'       => 'Testadores',
             'description' => 'Grupo para testadores do sistema',
-        ]
+        ],
+        'LLL' => [
+            'title'       => 'LLL#L',
+            'description' => 'fdgfgfgfgf',
+        ],
+        'Ldap' => [
+            'title'       => 'Ldap',
+            'description' => 'Ldap',
+        ],
 ];
 
     /**
@@ -97,7 +105,7 @@ class AuthGroups extends ShieldAuthGroups
         'posts.edit'          => 'Can edit existing posts',
         'posts.delete'        => 'Can delete existing posts',
         'posts.view'          => 'Can view posts',
-        'beta.access'         => 'Can access beta features',    ];
+        'beta.access'         => 'Can access beta features',];
 
     /**
      * --------------------------------------------------------------------
@@ -173,5 +181,11 @@ class AuthGroups extends ShieldAuthGroups
             'users.view',
             'posts.view',
         ],
-    ];
+                    'LLL' => [
+            'admin.access',
+        ],
+        'Ldap' => [
+            'admin.access',
+        ],
+];
 }
