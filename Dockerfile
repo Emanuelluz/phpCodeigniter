@@ -47,6 +47,9 @@ RUN echo '<Directory /var/www/html/public>\n\
 WORKDIR /var/www/html
 COPY . .
 
+# Configura arquivo .env para Docker (produção/container)
+RUN cp .env.docker.backup .env
+
 # Instala dependências
 RUN git config --global --add safe.directory /var/www/html
 # Ao adicionar novas dependências (ex.: Shield) o composer.lock precisa ser atualizado
