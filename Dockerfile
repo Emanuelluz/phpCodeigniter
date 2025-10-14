@@ -1,19 +1,37 @@
-# Dockerfile para aplicação CodeIgniter
-FROM shinsenter/codeigniter4:latest
+# Usa imagem oficial do PHP com Apache
+FROM php:8.2-apache
 
-# Instala o Composer caso a imagem não tenha (opcional, pois algumas já vêm com composer)
-# RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Instala extensões necessárias para CodeIgniter 4
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    git \
+    && docker-php-ext-install pdo mbstring gd xml
 
-# Copia apenas arquivos de dependência primeiro para camada de cache
-COPY composer.json composer.lock /var/www/html/
+# Instala o Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Atualiza as dependências do projeto
+# Define o diretório de trabalho
 WORKDIR /var/www/html
-RUN composer install --no-dev --optimize-autoloader || composer update --no-dev --optimize-autoloader
 
-# Copia o restante do projeto
-COPY . /var/www/html
+# Copia apenas os arquivos de dependência
+COPY composer.json composer.lock ./
 
-# Garante permissões no writable
+# Instala dependências (sem dev)
+RUN composer install --no-dev --optimize-autoloader
+
+# Copia o restante da aplicação
+COPY . .
+
+# Ajusta permissões do diretório writable
 RUN chown -R www-data:www-data /var/www/html/writable \
  && chmod -R 775 /var/www/html/writable
+
+# Habilita mod_rewrite (importante para CI4)
+RUN a2enmod rewrite
+
+# Expose porta (opcional, Apache já expõe 80)
+EXPOSE 80
