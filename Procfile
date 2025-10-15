@@ -1,1 +1,0 @@
-migrate: php spark migrate
