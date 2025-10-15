@@ -43,6 +43,8 @@
     },
     "scripts": {
         "test": "phpunit",
-        "php spark migrate"
+        "post-install-cmd": [
+      "php spark migrate"
+    ]
     }
 }
