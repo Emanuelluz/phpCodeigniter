@@ -1,1 +1,1 @@
-web: chmod -R 777 workspace/writable
+web: chmod -R 777 /workspace/writable
