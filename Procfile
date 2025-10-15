@@ -1,1 +1,1 @@
-web: chown -R 1000:1000 writable && chmod -R 777 writable
+web: chmod -R 777 workspace/writable
