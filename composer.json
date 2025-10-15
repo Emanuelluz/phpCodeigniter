@@ -15,7 +15,9 @@
         "codeigniter4/shield": "^1.2",
         "league/oauth2-client": "^2.8",
         "league/oauth2-google": "^4.0",
-        "onelogin/php-saml": "^4.3"
+        "onelogin/php-saml": "^4.3",
+         "ext-mysqli": "*",
+        "ext-pdo_mysql": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9",
