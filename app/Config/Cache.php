@@ -112,7 +112,7 @@ class Cache extends BaseConfig
      * Your Redis server can be specified below, if you are using
      * the Redis or Predis drivers.
      *
-     * @var array{host?: string, password?: string|null, port?: int, timeout?: int, database?: int}
+     * @var array{host?: string, password?: string|null, port?: int, timeout?: int, database?: int, username?: string}
      */
     public array $redis = [
         'host'     => '127.0.0.1',
@@ -120,7 +120,40 @@ class Cache extends BaseConfig
         'port'     => 6379,
         'timeout'  => 0,
         'database' => 0,
+        'username' => null,
     ];
+
+    /**
+     * --------------------------------------------------------------------------
+     * Constructor
+     * --------------------------------------------------------------------------
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        // Carregar configurações de cache do .env
+        if ($handler = env('cache.handler')) {
+            $this->handler = $handler;
+        }
+
+        // Configurações Redis do .env
+        if ($host = env('cache.redis.host')) {
+            $this->redis['host'] = $host;
+        }
+        if ($port = env('cache.redis.port')) {
+            $this->redis['port'] = (int) $port;
+        }
+        if ($password = env('cache.redis.password')) {
+            $this->redis['password'] = $password;
+        }
+        if (($database = env('cache.redis.database')) !== null) {
+            $this->redis['database'] = (int) $database;
+        }
+        if ($username = env('cache.redis.username')) {
+            $this->redis['username'] = $username;
+        }
+    }
 
     /**
      * --------------------------------------------------------------------------
