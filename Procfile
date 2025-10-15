@@ -1,1 +1,1 @@
-web: php spark migrate
+migrate: php spark migrate
