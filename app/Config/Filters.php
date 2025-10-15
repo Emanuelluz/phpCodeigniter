@@ -34,6 +34,10 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
+        
+        // SSO Filters
+        'sso_auth'      => \Modules\Sso\Filters\SsoAuthFilter::class,
+        'rate_limit'    => \Modules\Sso\Filters\RateLimitFilter::class,
     ];
 
     /**

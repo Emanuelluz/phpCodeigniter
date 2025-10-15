@@ -13,6 +13,7 @@ use Modules\Sso\Models\ProviderModel;
 class ProviderController extends BaseController
 {
     protected ProviderModel $model;
+    protected $helpers = ['auth'];
 
     public function __construct()
     {

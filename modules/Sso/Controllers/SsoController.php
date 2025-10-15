@@ -17,6 +17,7 @@ class SsoController extends BaseController
     protected ProviderModel $providerModel;
     protected AuthLogModel $logModel;
     protected SsoConfig $config;
+    protected $helpers = ['auth'];
 
     public function __construct()
     {
@@ -30,6 +31,9 @@ class SsoController extends BaseController
      */
     public function login()
     {
+        // Carregar helper auth
+        helper('auth');
+        
         // Se já está logado, redireciona
         if (auth()->loggedIn()) {
             return redirect()->to($this->config->loginRedirect);

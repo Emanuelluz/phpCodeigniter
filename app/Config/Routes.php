@@ -7,6 +7,8 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 
+service('auth')->routes($routes);
+
 // ===================================================
 // SSO Module Routes
 // ===================================================

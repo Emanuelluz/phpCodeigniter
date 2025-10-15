@@ -43,8 +43,11 @@ $routes->group('sso/admin', ['namespace' => 'Modules\Sso\Controllers', 'filter' 
     $routes->post('users/import', 'UserController::import', ['as' => 'sso_users_import']);
     
     // Configurações SSO
-    $routes->get('settings', 'SettingsController::index', ['as' => 'sso_settings']);
-    $routes->post('settings/update', 'SettingsController::update', ['as' => 'sso_settings_update']);
+    $routes->get('settings', 'AdminController::settings', ['as' => 'sso_settings']);
+    $routes->post('settings', 'AdminController::updateSettings', ['as' => 'sso_settings_update']);
+    $routes->get('settings/reset', 'AdminController::resetSettings', ['as' => 'sso_settings_reset']);
+    $routes->get('settings/export', 'AdminController::exportSettings', ['as' => 'sso_settings_export']);
+    $routes->post('settings/import', 'AdminController::importSettings', ['as' => 'sso_settings_import']);
     
     // Logs de Autenticação
     $routes->get('logs', 'LogController::index', ['as' => 'sso_logs']);

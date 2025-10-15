@@ -13,6 +13,7 @@ use Modules\Sso\Models\AuthLogModel;
 class LogController extends BaseController
 {
     protected AuthLogModel $model;
+    protected $helpers = ['auth'];
 
     public function __construct()
     {
