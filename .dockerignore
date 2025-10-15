@@ -1,9 +1,0 @@
-# .dockerignore
-.git
-.gitignore
-README.md
-.env.example
-Dockerfile
-.dockerignore
-node_modules
-tests/

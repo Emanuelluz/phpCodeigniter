@@ -34,14 +34,6 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
-        
-        // Shield filters
-        'session'       => \CodeIgniter\Shield\Filters\SessionAuth::class,
-        'tokens'        => \CodeIgniter\Shield\Filters\TokenAuth::class,
-        'chain'         => \CodeIgniter\Shield\Filters\ChainAuth::class,
-        'auth-rates'    => \CodeIgniter\Shield\Filters\AuthRates::class,
-        'group'         => \CodeIgniter\Shield\Filters\GroupFilter::class,
-        'permission'    => \CodeIgniter\Shield\Filters\PermissionFilter::class,
     ];
 
     /**
@@ -59,11 +51,11 @@ class Filters extends BaseFilters
      */
     public array $required = [
         'before' => [
-            // 'forcehttps', // desabilitado: Traefik faz o redirect; evita loops atrás de proxy
-            // 'pagecache',  // desabilitado: evitar cache de respostas de auth/admin
+            'forcehttps', // Force Global Secure Requests
+            'pagecache',  // Web Page Caching
         ],
         'after' => [
-            // 'pagecache',   // desabilitado para evitar cache em admin
+            'pagecache',   // Web Page Caching
             'performance', // Performance Metrics
             'toolbar',     // Debug Toolbar
         ],
