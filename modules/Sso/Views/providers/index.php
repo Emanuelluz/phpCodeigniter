@@ -1,16 +1,39 @@
-<?= $this->extend('Modules\Admin\Views\layout') ?>
-
-<?= $this->section('content') ?>
-
-<div class="container mx-auto px-4 py-8">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Providers SSO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+    
     <!-- Header -->
-    <div class="flex justify-between items-center mb-8">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-800">Providers de Autenticação</h1>
-            <p class="text-gray-600 mt-1">Gerencie os métodos de autenticação disponíveis</p>
+    <header class="bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-white mb-1">Providers de Autenticação</h1>
+                    <p class="text-blue-100">Gerencie os métodos de autenticação disponíveis</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/sso/admin" class="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg transition backdrop-blur-sm">
+                        <i class="fas fa-home mr-2"></i>Dashboard
+                    </a>
+                    <a href="/sso/admin/logs" class="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg transition backdrop-blur-sm">
+                        <i class="fas fa-list mr-2"></i>Logs
+                    </a>
+                </div>
+            </div>
         </div>
+    </header>
+
+<div class="container mx-auto px-4 py-8 max-w-7xl">
+    <!-- Botão Novo Provider -->
+    <div class="mb-8">
         <a href="<?= base_url('sso/admin/providers/create') ?>" 
-           class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 flex items-center shadow-lg">
+           class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 inline-flex items-center shadow-lg">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
@@ -208,4 +231,5 @@ function deleteProvider(id, title) {
 }
 </script>
 
-<?= $this->endSection() ?>
+</body>
+</html>

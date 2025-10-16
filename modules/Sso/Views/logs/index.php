@@ -6,6 +6,30 @@
     <title>Logs de Autenticação SSO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Estilização da paginação do CodeIgniter */
+        .pagination {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .pagination a, .pagination strong {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: #374151;
+        }
+        .pagination a:hover {
+            background-color: #f3f4f6;
+        }
+        .pagination strong {
+            background-color: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+    </style>
 </head>
 <body class="bg-gray-50 font-sans antialiased">
     
@@ -209,14 +233,17 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        <?= esc($log['provider']) ?>
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <?php
-                                    $statusConfig = [
+                                </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <?= esc($log['provider_type'] ?? 'N/A') ?>
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <?php
+                        $statusConfig = [
                                         'success' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'icon' => 'fa-check-circle', 'label' => 'Sucesso'],
                                         'failed' => ['bg' => 'bg-red-100', 'text' => 'text-red-800', 'icon' => 'fa-times-circle', 'label' => 'Falha'],
                                         'pending' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-800', 'icon' => 'fa-clock', 'label' => 'Pendente']
@@ -256,31 +283,15 @@
             </div>
 
             <!-- Pagination -->
-            <?php if (isset($pager)): ?>
+            <?php if (isset($pager) && $pager->getPageCount() > 1): ?>
             <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
                 <div class="flex items-center justify-between">
                     <div class="text-sm text-gray-700">
-                        Página <span class="font-medium"><?= $pager->getCurrentPage() ?></span> de 
+                        Mostrando página <span class="font-medium"><?= $pager->getCurrentPage() ?></span> de 
                         <span class="font-medium"><?= $pager->getPageCount() ?></span>
                     </div>
                     <div class="flex space-x-2">
-                        <?php if ($pager->hasPrevious()): ?>
-                            <a href="<?= $pager->getPrevious() ?>" class="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-100 transition">
-                                <i class="fas fa-chevron-left"></i>
-                            </a>
-                        <?php endif ?>
-                        
-                        <?php foreach ($pager->links() as $link): ?>
-                            <a href="<?= $link['uri'] ?>" class="px-3 py-2 <?= $link['active'] ? 'bg-blue-600 text-white' : 'border border-gray-300 hover:bg-gray-100' ?> rounded-lg text-sm transition">
-                                <?= $link['title'] ?>
-                            </a>
-                        <?php endforeach ?>
-
-                        <?php if ($pager->hasNext()): ?>
-                            <a href="<?= $pager->getNext() ?>" class="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-100 transition">
-                                <i class="fas fa-chevron-right"></i>
-                            </a>
-                        <?php endif ?>
+                        <?= $pager->links() ?>
                     </div>
                 </div>
             </div>

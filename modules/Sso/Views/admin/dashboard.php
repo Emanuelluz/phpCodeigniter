@@ -106,7 +106,7 @@
             
             <!-- Login Trend Chart -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center justify-between mb-4">
                     <div>
                         <h2 class="text-lg font-semibold text-gray-900">Tendência de Logins</h2>
                         <p class="text-sm text-gray-500">Últimos 7 dias</p>
@@ -116,18 +116,22 @@
                         <button class="px-3 py-1 text-xs text-gray-600 hover:bg-gray-50 rounded-lg">30D</button>
                     </div>
                 </div>
-                <canvas id="loginTrendChart" height="250"></canvas>
+                <div class="h-64">
+                    <canvas id="loginTrendChart"></canvas>
+                </div>
             </div>
 
             <!-- Provider Usage Chart -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center justify-between mb-4">
                     <div>
                         <h2 class="text-lg font-semibold text-gray-900">Uso por Provider</h2>
                         <p class="text-sm text-gray-500">Distribuição de autenticações</p>
                     </div>
                 </div>
-                <canvas id="providerUsageChart" height="250"></canvas>
+                <div class="h-64">
+                    <canvas id="providerUsageChart"></canvas>
+                </div>
             </div>
 
         </div>
@@ -159,7 +163,7 @@
                                 <div>
                                     <p class="text-sm font-medium text-gray-900"><?= esc($log['username']) ?></p>
                                     <p class="text-xs text-gray-500">
-                                        <span class="font-semibold"><?= esc($log['provider']) ?></span> • 
+                                        <span class="font-semibold"><?= esc($log['provider_type'] ?? 'N/A') ?></span> • 
                                         <?= esc($log['ip_address']) ?>
                                     </p>
                                 </div>
