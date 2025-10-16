@@ -43,10 +43,10 @@ DB_NAME=seu_banco
 DB_USER=usuario
 DB_PASS=senha
 DB_DRIVER=MySQLi
-app.baseURL=https://seu-dominio.com/
+app.baseURL=https://seu-dominio.com/  # OPCIONAL - detecta automaticamente se omitido
 ```
 
-⚠️ **IMPORTANTE**: Use `app.baseURL` (não `APP_BASE_URL`) com barra final!
+⚠️ **NOTA**: A variável `app.baseURL` é **opcional**. Se não configurada, a aplicação detecta automaticamente o domínio.
 
 ### 2. Executar Setup
 

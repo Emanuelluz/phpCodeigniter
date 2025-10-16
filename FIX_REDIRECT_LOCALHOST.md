@@ -6,20 +6,26 @@ Após fazer login em `https://pppr.ecl.dev.br/sso/login`, a aplicação redireci
 
 ## ✅ Solução
 
-A aplicação estava usando o `baseURL` hardcoded no arquivo `app/Config/App.php`. Foi implementada uma solução para ler da variável de ambiente.
+A aplicação estava usando o `baseURL` hardcoded no arquivo `app/Config/App.php`. Foi implementada uma solução **com auto-detecção**:
 
-## 📝 Configuração no Easypanel
+1. **Primeiro** tenta ler de variáveis de ambiente
+2. **Se não encontrar**, detecta automaticamente baseado no HTTP_HOST do request
 
-Configure a seguinte variável de ambiente:
+Isso significa que **não é necessário configurar variáveis de ambiente** - a aplicação vai detectar automaticamente que está sendo acessada via `https://pppr.ecl.dev.br` e usar essa URL.
+
+## 📝 Configuração no Easypanel (Opcional)
+
+Se você quiser forçar uma URL específica, configure:
 
 ```env
 app.baseURL=https://pppr.ecl.dev.br/
 ```
 
-⚠️ **IMPORTANTE:**
+⚠️ **NOTA:**
+- Esta configuração é **OPCIONAL**
+- A aplicação detecta automaticamente se não configurada
 - Use `app.baseURL` (não `APP_BASE_URL`)
 - A URL deve terminar com `/` (barra final)
-- Use `https://` em produção
 
 ## 🔍 Verificação
 

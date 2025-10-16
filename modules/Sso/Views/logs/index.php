@@ -257,8 +257,47 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="text-sm text-gray-900"><?= esc($log['ip_address']) ?></div>
-                                    <div class="text-xs text-gray-500 truncate max-w-xs" title="<?= esc($log['user_agent']) ?>">
-                                        <?= esc(substr($log['user_agent'], 0, 50)) ?>...
+                                    <div class="text-xs text-gray-500" title="<?= esc($log['user_agent']) ?>">
+                                        <?php
+                                        // Extrair navegador do User Agent
+                                        $ua = $log['user_agent'];
+                                        $browser = 'Desconhecido';
+                                        
+                                        if (stripos($ua, 'Edg/') !== false) {
+                                            preg_match('/Edg\/([0-9.]+)/', $ua, $matches);
+                                            $browser = '🔷 Edge ' . ($matches[1] ?? '');
+                                        } elseif (stripos($ua, 'Chrome/') !== false) {
+                                            preg_match('/Chrome\/([0-9.]+)/', $ua, $matches);
+                                            $browser = '🌐 Chrome ' . ($matches[1] ?? '');
+                                        } elseif (stripos($ua, 'Firefox/') !== false) {
+                                            preg_match('/Firefox\/([0-9.]+)/', $ua, $matches);
+                                            $browser = '🦊 Firefox ' . ($matches[1] ?? '');
+                                        } elseif (stripos($ua, 'Safari/') !== false && stripos($ua, 'Chrome/') === false) {
+                                            preg_match('/Version\/([0-9.]+)/', $ua, $matches);
+                                            $browser = '🧭 Safari ' . ($matches[1] ?? '');
+                                        } elseif (stripos($ua, 'OPR/') !== false || stripos($ua, 'Opera/') !== false) {
+                                            preg_match('/(?:OPR|Opera)\/([0-9.]+)/', $ua, $matches);
+                                            $browser = '🎭 Opera ' . ($matches[1] ?? '');
+                                        }
+                                        
+                                        // Extrair OS
+                                        $os = '';
+                                        if (stripos($ua, 'Windows NT 10.0') !== false) {
+                                            $os = 'Windows 10/11';
+                                        } elseif (stripos($ua, 'Windows NT') !== false) {
+                                            $os = 'Windows';
+                                        } elseif (stripos($ua, 'Mac OS X') !== false) {
+                                            $os = 'macOS';
+                                        } elseif (stripos($ua, 'Linux') !== false) {
+                                            $os = 'Linux';
+                                        } elseif (stripos($ua, 'Android') !== false) {
+                                            $os = 'Android';
+                                        } elseif (stripos($ua, 'iOS') !== false || stripos($ua, 'iPhone') !== false) {
+                                            $os = 'iOS';
+                                        }
+                                        
+                                        echo esc($browser . ($os ? ' • ' . $os : ''));
+                                        ?>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">

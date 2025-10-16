@@ -41,11 +41,32 @@ class AdminUserSeeder extends Seeder
             // Adicionar grupo 'superadmin' ou 'admin'
             $user->addGroup('superadmin');
             
+            // Criar identidade adicional para login com username
+            // Por padrão, Shield só cria email_password
+            $identities = model('CodeIgniter\Shield\Models\UserIdentityModel');
+            
+            // Verificar se já existe identidade username_password
+            $existingIdentity = $identities->where([
+                'user_id' => $user->id,
+                'type' => 'username_password'
+            ])->first();
+            
+            if (!$existingIdentity) {
+                $identities->insert([
+                    'user_id' => $user->id,
+                    'type' => 'username_password',
+                    'secret' => 'admin',  // username
+                    'secret2' => $user->password_hash,  // mesma senha hasheada
+                    'force_reset' => 0,
+                ]);
+            }
+            
             echo "✅ Usuário administrador criado com sucesso!\n";
             echo "   Username: admin\n";
             echo "   Email: admin@example.com\n";
             echo "   Senha: DtiFB@2025\n";
             echo "   Grupo: superadmin\n";
+            echo "   Login: Pode usar username OU email\n";
         } else {
             echo "❌ Erro ao buscar usuário criado.\n";
         }
