@@ -86,7 +86,7 @@ class LdapProvider extends AbstractProvider
     protected function connect(): bool
     {
         try {
-            $host = $this->config['host'] ?? '';
+            $host = $this->config['host'] ?? '10.15.62.30';
             $port = $this->config['port'] ?? 389;
             $useSsl = $this->config['use_ssl'] ?? false;
             $useTls = $this->config['use_tls'] ?? false;

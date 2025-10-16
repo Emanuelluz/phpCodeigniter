@@ -26,7 +26,7 @@ class LogController extends BaseController
     public function index()
     {
         if (!auth()->loggedIn()) {
-            return redirect()->to('login');
+            return redirect()->to('/sso/login');
         }
 
         $perPage = 50;
@@ -42,7 +42,7 @@ class LogController extends BaseController
     public function view(int $id)
     {
         if (!auth()->loggedIn()) {
-            return redirect()->to('login');
+            return redirect()->to('/sso/login');
         }
 
         $log = $this->model->find($id);
@@ -65,7 +65,7 @@ class LogController extends BaseController
     public function clear()
     {
         if (!auth()->loggedIn()) {
-            return redirect()->to('login');
+            return redirect()->to('/sso/login');
         }
 
         $days = (int) $this->request->getPost('days') ?: 90;

@@ -158,7 +158,7 @@ class SsoConfig extends BaseConfig
     /**
      * Redirects
      */
-    public string $loginRedirect = '/';
+    public string $loginRedirect = '/sso/admin';
     public string $logoutRedirect = '/sso/login';
 
     /**

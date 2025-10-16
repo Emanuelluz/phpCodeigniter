@@ -19,7 +19,7 @@ class AdminController extends BaseController
     public function index()
     {
         if (!auth()->loggedIn()) {
-            return redirect()->to('login');
+            return redirect()->to('/sso/login');
         }
 
         $providerModel = new ProviderModel();
@@ -40,7 +40,7 @@ class AdminController extends BaseController
     public function settings()
     {
         if (!auth()->loggedIn()) {
-            return redirect()->to('login');
+            return redirect()->to('/sso/login');
         }
 
         $settingsModel = new SettingsModel();
@@ -55,7 +55,7 @@ class AdminController extends BaseController
     public function updateSettings()
     {
         if (!auth()->loggedIn()) {
-            return redirect()->to('login');
+            return redirect()->to('/sso/login');
         }
 
         $settingsModel = new SettingsModel();
@@ -100,7 +100,7 @@ class AdminController extends BaseController
     public function resetSettings()
     {
         if (!auth()->loggedIn()) {
-            return redirect()->to('login');
+            return redirect()->to('/sso/login');
         }
 
         $settingsModel = new SettingsModel();
@@ -118,7 +118,7 @@ class AdminController extends BaseController
     public function exportSettings()
     {
         if (!auth()->loggedIn()) {
-            return redirect()->to('login');
+            return redirect()->to('/sso/login');
         }
 
         $settingsModel = new SettingsModel();
@@ -136,7 +136,7 @@ class AdminController extends BaseController
     public function importSettings()
     {
         if (!auth()->loggedIn()) {
-            return redirect()->to('login');
+            return redirect()->to('/sso/login');
         }
 
         $file = $this->request->getFile('settings_file');

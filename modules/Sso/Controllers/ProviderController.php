@@ -26,7 +26,7 @@ class ProviderController extends BaseController
     public function index()
     {
         if (!auth()->loggedIn()) {
-            return redirect()->to('login');
+            return redirect()->to('/sso/login');
         }
 
         $data['providers'] = $this->model->orderBy('priority', 'ASC')->findAll();
@@ -40,7 +40,7 @@ class ProviderController extends BaseController
     public function create()
     {
         if (!auth()->loggedIn()) {
-            return redirect()->to('login');
+            return redirect()->to('/sso/login');
         }
 
         $data['types'] = ['local', 'ldap', 'oauth', 'saml'];
@@ -116,7 +116,7 @@ class ProviderController extends BaseController
     public function edit(int $id)
     {
         if (!auth()->loggedIn()) {
-            return redirect()->to('login');
+            return redirect()->to('/sso/login');
         }
 
         $provider = $this->model->find($id);
@@ -206,7 +206,7 @@ class ProviderController extends BaseController
     public function delete(int $id)
     {
         if (!auth()->loggedIn()) {
-            return redirect()->to('login');
+            return redirect()->to('/sso/login');
         }
 
         $provider = $this->model->find($id);
