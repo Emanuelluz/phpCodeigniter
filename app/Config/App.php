@@ -23,10 +23,24 @@ class App extends BaseConfig
         parent::__construct();
 
         // Sobrescrever baseURL com variável de ambiente se existir
-        if (getenv('APP_BASE_URL')) {
-            $this->baseURL = rtrim(getenv('APP_BASE_URL'), '/') . '/';
-        } elseif (getenv('app.baseURL')) {
-            $this->baseURL = rtrim(getenv('app.baseURL'), '/') . '/';
+        // Tenta várias formas de ler a variável
+        $envBaseUrl = env('app.baseURL') 
+                   ?? env('APP_BASE_URL') 
+                   ?? getenv('app.baseURL') 
+                   ?? getenv('APP_BASE_URL')
+                   ?? ($_ENV['app.baseURL'] ?? null)
+                   ?? ($_ENV['APP_BASE_URL'] ?? null);
+
+        if ($envBaseUrl) {
+            $this->baseURL = rtrim($envBaseUrl, '/') . '/';
+        } 
+        // Se não encontrou nas variáveis de ambiente, tenta detectar automaticamente
+        elseif (isset($_SERVER['HTTP_HOST'])) {
+            $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' 
+                        || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')) 
+                        ? 'https://' : 'http://';
+            
+            $this->baseURL = $protocol . $_SERVER['HTTP_HOST'] . '/';
         }
     }
 

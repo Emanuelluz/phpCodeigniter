@@ -31,12 +31,15 @@ DB_DRIVER=MySQLi
 - Use o hostname fornecido pelo Easypanel para o MySQL
 - Exemplo: `mysql-instance-123.easypanel.host`
 
-### Aplicação
+### Aplicação (Opcional)
 ```env
 app.baseURL=https://seu-dominio.com/
 ```
 
-⚠️ **IMPORTANTE**: 
+⚠️ **NOTA**: 
+- Esta variável é **OPCIONAL**
+- Se não configurada, a aplicação detecta automaticamente baseado no domínio acessado
+- Configure apenas se precisar forçar uma URL específica
 - A URL deve terminar com `/` (barra final)
 - Use `https://` em produção
 - Exemplo: `app.baseURL=https://pppr.ecl.dev.br/`
